@@ -1,0 +1,7 @@
+{
+    "project_name": "DW",
+    "app_prefix": "m2c2-dw",
+    "instance_cpu":256,
+    "instance_memory_limit_mib":512,
+    "instance_desired_count": 1
+}

@@ -1,0 +1,6 @@
+
+api/app/.env
+.DS_Store
+cdk/cdk.out/*
+connect_aws_documentdb/connect_m2c2kit_tunnel.sh
+cdk/__pycache__/stack.cpython-39.pyc
