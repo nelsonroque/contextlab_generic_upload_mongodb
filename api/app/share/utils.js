@@ -99,32 +99,32 @@ function upload_data(data, DEBUG) {
     var jd = new Object();
 
     // --- collect identifiers
-    js.study_uid = "Project SEED";
-    jd.user_uid = participant_id;
-    jd.session_uid = session_id;
-    jd.session_uuid = session_uuid;
-    jd.activity_id = experiment_name;
-    jd.timestamp_start = timestamp_start;
-    jd.task_version = TASK_VERSION;
-    jd.useragent = navigator.userAgent;
-    jd.debug_flag = DEBUG;
-    jd.event_type = event_type;
+    js.study_uid = study_id || "NOT COLLECTED";
+    jd.user_uid = participant_id || "NOT COLLECTED";
+    jd.session_uid = session_id || "NOT COLLECTED";
+    jd.session_uuid = session_uuid || "NOT COLLECTED";
+    jd.activity_id = experiment_name || "NOT COLLECTED";
+    jd.timestamp_start = timestamp_start || "NOT COLLECTED";
+    jd.task_version = TASK_VERSION || "NOT COLLECTED";
+    jd.useragent = navigator.userAgent || "NOT COLLECTED";
+    jd.debug_flag = DEBUG || "NOT COLLECTED";
+    jd.event_type = event_type || "NOT COLLECTED";
 
     // --- collect runtime info
-    jd.window_location_href = window.location.href;
-    jd.window_location_hostname = window.location.hostname;
-    jd.window_location_protocol = window.location.protocol;
-    jd.window_location_port = window.location.port;
+    jd.window_location_href = window.location.href || "NOT COLLECTED";
+    jd.window_location_hostname = window.location.hostname || "NOT COLLECTED";
+    jd.window_location_protocol = window.location.protocol || "NOT COLLECTED";
+    jd.window_location_port = window.location.port || "NOT COLLECTED";
 
     // --- collect window /screen information
-    jd.window_innerHeight = window.innerHeight;
-    jd.window_innerWidth = window.innerWidth;
-    jd.screen_availHeight = screen.availHeight;
-    jd.screen_availWidth = screen.availWidth;
-    jd.screen_width = screen.width;
-    jd.screen_height = screen.height;
-    jd.screen_colorDepth = screen.colorDepth;
-    jd.screen_pixelDepth = screen.pixelDepth;
+    jd.window_innerHeight = window.innerHeight || -999;
+    jd.window_innerWidth = window.innerWidth || -999;
+    jd.screen_availHeight = screen.availHeight || -999;
+    jd.screen_availWidth = screen.availWidth || -999;
+    jd.screen_width = screen.width || -999;
+    jd.screen_height = screen.height || -999;
+    jd.screen_colorDepth = screen.colorDepth || -999;
+    jd.screen_pixelDepth = screen.pixelDepth || -999;
 
     // ---collect trial data
     jd.data_json = JSON.stringify(data.trials);

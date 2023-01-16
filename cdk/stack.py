@@ -4,6 +4,8 @@ import aws_cdk.aws_ec2 as ec2
 import aws_cdk.aws_ecs as ecs
 import aws_cdk.aws_ecs_patterns as ecs_patterns
 import aws_cdk.aws_docdb as docdb
+import aws_cdk.aws_elasticloadbalancingv2 as elbv2
+import aws_cdk.aws_route53 as aws_route53
 
 import json
 
@@ -13,6 +15,7 @@ APP_PREFIX = "contextlab-GenericStore"
 INSTANCE_CPU_MB = 256
 INSTANCE_MEMORY_MB = 512
 INSTANCE_COUNT = 2
+APP_DOMAIN = "api.contextlab.daytah.io"
 
 class GenericStore(Stack):
     def __init__(
@@ -47,6 +50,7 @@ class GenericStore(Stack):
                 directory="../api",
             )
         )
+        # https://github.com/aws/aws-cdk/issues/7120
         self.ecs_service = ecs_patterns.ApplicationLoadBalancedFargateService(
             self,
             f"{APP_PREFIX}_ecs_service",
@@ -55,6 +59,14 @@ class GenericStore(Stack):
             memory_limit_mib=INSTANCE_MEMORY_MB,
             desired_count=INSTANCE_COUNT, # increase for horizontal scaling
             task_image_options=image,
+
+            # add HTTPS support to load balancer
+            redirect_http=True,
+            public_load_balancer=True,
+            protocol=elbv2.ApplicationProtocol.HTTPS,
+            domain_name=f"{APP_DOMAIN}",
+            domain_zone=aws_route53.HostedZone.from_hosted_zone_attributes(self, id=f"{APP_PREFIX}_hosted-zone",zone_name="contextlab.daytah.io", hosted_zone_id="Z1020368HSLC502REWD1")
+            # #from_lookup(self, "contextlab.daytah.io", domain_name=APP_DOMAIN), #https://docs.aws.amazon.com/cdk/api/v1/python/aws_cdk.aws_route53/HostedZone.html
          )
          # table with new suggested values
          #https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-cpu-memory-error.html

@@ -6,3 +6,4 @@ pymongo[srv]
 requests
 fastapi-users[beanie]
 python-dotenv
+aiofiles
