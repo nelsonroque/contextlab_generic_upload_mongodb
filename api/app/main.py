@@ -1,5 +1,6 @@
 from typing import Union
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
 from beanie import init_beanie
 
@@ -25,6 +26,11 @@ app = FastAPI(title=APP_NAME,
 
 # create a request ID for all requests
 request_id_contextvar = contextvars.ContextVar("request_id", default=None)
+
+# -----------------------------------------------------------------------------
+
+# MOUNT FILES
+app.mount("/share", StaticFiles(directory="app/share"), name="shared_files")
 
 # -----------------------------------------------------------------------------
 

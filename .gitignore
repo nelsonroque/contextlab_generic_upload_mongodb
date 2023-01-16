@@ -4,3 +4,4 @@ api/app/.env
 cdk/cdk.out/*
 connect_aws_documentdb/connect_m2c2kit_tunnel.sh
 cdk/__pycache__/stack.cpython-39.pyc
+cdk/__pycache__/stack.cpython-38.pyc
