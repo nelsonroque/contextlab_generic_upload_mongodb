@@ -99,7 +99,7 @@ function upload_data(data, DEBUG) {
     var jd = new Object();
 
     // --- collect identifiers
-    js.study_uid = study_id || "NOT COLLECTED";
+    jd.study_uid = study_id || "NOT COLLECTED";
     jd.user_uid = participant_id || "NOT COLLECTED";
     jd.session_uid = session_id || "NOT COLLECTED";
     jd.session_uuid = session_uuid || "NOT COLLECTED";
