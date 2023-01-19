@@ -76,7 +76,7 @@ function upload_data(data, DEBUG) {
 
   //if (!DEBUG) {
   const api_url =
-    "https://api.contextlab.daytah.io/upload";
+    "https://api.contextlab.daytah.io/upload/";
 
   // -------------------
 

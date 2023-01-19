@@ -16,6 +16,8 @@ INSTANCE_CPU_MB = 256
 INSTANCE_MEMORY_MB = 512
 INSTANCE_COUNT = 2
 APP_DOMAIN = "api.contextlab.daytah.io"
+ZONE_NAME = "contextlab.daytah.io"
+ZONE_ID = "Z1020368HSLC502REWD1"
 
 class GenericStore(Stack):
     def __init__(
@@ -65,7 +67,7 @@ class GenericStore(Stack):
             public_load_balancer=True,
             protocol=elbv2.ApplicationProtocol.HTTPS,
             domain_name=f"{APP_DOMAIN}",
-            domain_zone=aws_route53.HostedZone.from_hosted_zone_attributes(self, id=f"{APP_PREFIX}_hosted-zone",zone_name="contextlab.daytah.io", hosted_zone_id="Z1020368HSLC502REWD1")
+            domain_zone=aws_route53.HostedZone.from_hosted_zone_attributes(self, id=f"{APP_PREFIX}_hosted-zone",zone_name=ZONE_NAME, hosted_zone_id=ZONE_ID)
             # #from_lookup(self, "contextlab.daytah.io", domain_name=APP_DOMAIN), #https://docs.aws.amazon.com/cdk/api/v1/python/aws_cdk.aws_route53/HostedZone.html
          )
          # table with new suggested values
