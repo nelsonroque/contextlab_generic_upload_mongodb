@@ -7,9 +7,7 @@ import aws_cdk.aws_docdb as docdb
 import aws_cdk.aws_elasticloadbalancingv2 as elbv2
 import aws_cdk.aws_route53 as aws_route53
 
-import json
-
-# TODO: read from JSON file
+# TODO: read from .env file
 PROJECT_NAME = "GenericStore"
 APP_PREFIX = "contextlab-GenericStore"
 INSTANCE_CPU_MB = 256
