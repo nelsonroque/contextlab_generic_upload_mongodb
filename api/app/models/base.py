@@ -77,14 +77,14 @@ class Upload(ObjectIdentifiers):
     window_location_port: Optional[str]
 
     # collect screen and window dimensions
-    window_innerHeight: Optional[int]
-    window_innerWidth: Optional[int]
-    screen_availHeight: Optional[int]
-    screen_availWidth: Optional[int]
-    screen_width: Optional[int]
-    screen_height: Optional[int]
-    screen_colorDepth: Optional[int]
-    screen_pixelDepth: Optional[int]
+    window_innerHeight: Optional[Optional[int]]
+    window_innerWidth: Optional[Optional[int]]
+    screen_availHeight: Optional[Optional[int]]
+    screen_availWidth: Optional[Optional[int]]
+    screen_width: Optional[Optional[int]]
+    screen_height: Optional[Optional[int]]
+    screen_colorDepth: Optional[Optional[int]]
+    screen_pixelDepth: Optional[Optional[int]]
 
     class Settings:
         indexes = [

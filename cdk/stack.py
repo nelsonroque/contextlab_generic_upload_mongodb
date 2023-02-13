@@ -8,8 +8,8 @@ import aws_cdk.aws_elasticloadbalancingv2 as elbv2
 import aws_cdk.aws_route53 as aws_route53
 
 # TODO: read from .env file
-PROJECT_NAME = "GenericStore"
-APP_PREFIX = "contextlab-GenericStore"
+PROJECT_NAME = "GenericStorage"
+APP_PREFIX = f"contextlab-{PROJECT_NAME}"
 INSTANCE_CPU_MB = 256
 INSTANCE_MEMORY_MB = 512
 INSTANCE_COUNT = 2
@@ -17,7 +17,7 @@ APP_DOMAIN = "api.contextlab.daytah.io"
 ZONE_NAME = "contextlab.daytah.io"
 ZONE_ID = "Z1020368HSLC502REWD1"
 
-class GenericStore(Stack):
+class GenericStorage(Stack):
     def __init__(
         self,
         scope: Construct,
