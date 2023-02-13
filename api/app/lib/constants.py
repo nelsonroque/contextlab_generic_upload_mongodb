@@ -63,10 +63,15 @@ if APP_DEPLOYMENT == "dev":
     INSTALL_URL = f"http://{LOCAL_URL}"
     INSTALL_WS_URL = f"ws://{LOCAL_URL}"
     MONGODB_ENDPOINT_URL = f"mongodb+srv://{DEV_DB_USERNAME}:{DEV_DB_PASSWORD}@{DEV_DB_CLUSTERID}/?retryWrites=true&w=majority"
+elif APP_DEPLOYMENT == "staging":
+    INSTALL_URL = f"https://{PROD_URL}"
+    INSTALL_WS_URL = f"wss://{PROD_URL}"
+    MONGODB_ENDPOINT_URL = f"mongodb://{DEV_DB_USERNAME}:{DEV_DB_PASSWORD}@{PROD_DB_CLUSTERID}:27017/?tls=true&tlsCAFile=rds-combined-ca-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites={DOCDB_RETRYWRITES}"
 elif APP_DEPLOYMENT == "production":
     INSTALL_URL = f"https://{PROD_URL}"
     INSTALL_WS_URL = f"wss://{PROD_URL}"
     MONGODB_ENDPOINT_URL = f"mongodb://{PROD_DB_USERNAME}:{PROD_DB_PASSWORD}@{PROD_DB_CLUSTERID}:27017/?tls=true&tlsCAFile=rds-combined-ca-bundle.pem&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites={DOCDB_RETRYWRITES}"
+
 
 # CORS ----------------------------------------------------------------
 
