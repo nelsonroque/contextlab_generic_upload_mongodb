@@ -38,6 +38,7 @@ class UploadQuery(BaseModel):
     event_type: Optional[str]
     screen_width: Optional[str]
     screen_height: Optional[str]
+    activity_id: Optional[str]
 
 class UserAPIKey(BaseModel):
     key: str
@@ -91,7 +92,9 @@ class Upload(ObjectIdentifiers):
             IndexModel("uuid", unique=True),
             IndexModel("study_uid", unique=False),
             IndexModel("participant_id", unique=False),
+            IndexModel("event_type", unique=False),
             IndexModel("created_utc", unique=False),
+            IndexModel("activity_id", unique=False),
             #expireAfterSeconds
         ]
 

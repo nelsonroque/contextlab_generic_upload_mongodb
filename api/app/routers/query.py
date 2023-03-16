@@ -38,7 +38,7 @@ async def get_uploads_with_skip_limit_filtering(query: UploadQuery, commons: dic
         logger.info(f"Total results {total}.")
 
         # TODO: add Teams webhook notification
-        send_teams_webhook(f"Total results for query by user: {user} | {total} records.")
+        #send_teams_webhook(f"Total results for query by user: {user} | {total} records.")
         logger.info(f"Currently returning {len(results)} results (limit = {limit}).")
         logger.info("Attempting results validation with Pydantic.")
         results_pr = PaginatedReturn(
