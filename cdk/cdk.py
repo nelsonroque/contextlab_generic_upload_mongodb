@@ -5,7 +5,7 @@ from stack import GenericStorage
 app = App()
 GenericStorage(
     app, 
-    "GenericStorage",
+    "ContextLabDataWarehouse",
     env=Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],

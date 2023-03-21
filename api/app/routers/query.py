@@ -13,7 +13,7 @@ from ..lib.users import *
 router = APIRouter(
     prefix="/query",
     tags=["data-access"],
-    responses={500: {"description": "huge mystery..."}})
+    responses={500: {"description": "huge mystery what is wrong..."}})
 
 # Query activity data
 @router.post("/", response_model = PaginatedReturn)

@@ -5,7 +5,7 @@ log_config = {
     "version":1,
     "root":{
         "handlers" : ["console"],
-        "level": "INFO"
+        "level": "DEBUG"
     },
     "handlers":{
         "console":{
