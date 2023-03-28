@@ -1,5 +1,6 @@
 from typing import Union
 from fastapi import FastAPI, APIRouter
+from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, Json
 from starlette.status import *
 
@@ -9,11 +10,44 @@ from ..lib.storage import *
 from ..lib.depends import *
 from ..lib.notify import *
 from ..lib.users import *
+from ..lib.authdb import db as auth_db
 
 router = APIRouter(
     prefix="/query",
     tags=["data-access"],
     responses={500: {"description": "huge mystery what is wrong..."}})
+
+
+@router.post("/allow/{email}")
+async def get_upload_by_uid(email: str, study:str, user: User = Depends(current_active_user)):
+    if user.email in ["nelsonroquejr@gmail.com", "nelson.roque@ucf.edu"]:
+        logger.info("Connecting to MongoDB")
+        client = pymongo.MongoClient(MONGODB_ENDPOINT_URL)
+        db = client[AUTH_DB]
+        logger.info(db)
+        logger.info(AUTH_DB)
+        logger.info("Connected to MongoDB!")
+
+        user_r = db['User'].find_one({"email": email})
+        print(user_r)
+
+        if user_r is None:
+            # Return a 404 error if user not found
+            return {"error": f"User with email: {email} not found"}
+
+        # Add the study to the user's studies list
+        if 'studies' not in user_r:
+            user_r['studies'] = []  # Initialize the studies list if it doesn't exist yet
+
+        if study not in user_r['studies']:
+            user_r['studies'].append(study)
+            # Update the user record in the database
+            db['User'].update_one({"email": email}, {"$set": user_r})
+            return "Success"
+        else:
+            return {"error": f"User with email: {email} already has access to study: {study}"}
+    else:
+        return {"error": "You do not have permission to access this endpoint."}
 
 # Query activity data
 @router.post("/", response_model = PaginatedReturn)
