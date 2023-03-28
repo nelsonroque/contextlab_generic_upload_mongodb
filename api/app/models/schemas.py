@@ -23,12 +23,22 @@ class UserRead(schemas.BaseUser[PydanticObjectId]):
     last_name: Optional[str]
     affiliation: Optional[str]
     studies: list = []
+    class Settings:
+        email_collation = None
+        indexes = [
+            IndexModel("email", unique=True)
+    ]
     pass
 
 class UserCreate(schemas.BaseUserCreate):
     first_name: str
     last_name: str
     affiliation: str
+    class Settings:
+        email_collation = None
+        indexes = [
+            IndexModel("email", unique=True)
+    ]
     pass
 
 class UserUpdate(schemas.BaseUserUpdate):
