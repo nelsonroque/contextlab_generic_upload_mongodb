@@ -1,13 +1,16 @@
 import motor.motor_asyncio
+import pymongo
 from .constants import *
 from ..models.schemas import *
 from .log import logger
 
 # get database connection client
-client = motor.motor_asyncio.AsyncIOMotorClient(
-    MONGODB_ENDPOINT_URL, 
-    uuidRepresentation="standard"
-)
+# client = motor.motor_asyncio.AsyncIOMotorClient(
+#     MONGODB_ENDPOINT_URL, 
+#     uuidRepresentation="standard"
+# )
+
+client = pymongo.MongoClient(MONGODB_ENDPOINT_URL)
 
 # get database for auth (seperate from data)
 db = client[AUTH_DB]

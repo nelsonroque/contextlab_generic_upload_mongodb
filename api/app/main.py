@@ -2,6 +2,7 @@ from typing import Union
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
+import pymongo
 from beanie import init_beanie
 
 import uuid
@@ -40,7 +41,11 @@ async def startup_event():
     request_id = str(uuid.uuid4())
     #request_id_contextvar.set(request_id) # TODO: not working
     logger.info(f"App startup. Request [{request_id}]].")
+
+    # turn off collation on client to avoid errors
+    client = pymongo.MongoClient(MONGODB_ENDPOINT_URL)
     await init_beanie(
+        client,
         database=db,
         document_models=[
             User,
