@@ -1,32 +1,39 @@
 from typing import Union
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
 import pymongo
-from beanie import init_beanie
+
+from jose import JWTError, jwt
+from passlib.context import CryptContext
 
 import uuid
 import contextvars
 
 # rest of API library
-from .routers import metadata, query, debug, upload
+from .routers import metadata, query, debug, upload, auth
 from .lib.constants import *
 from .lib.depends import logger
 
 # auth library
-from .lib.authdb import User, db
+from .lib.authdb import *
 from .models.schemas import *
-from .lib.users import auth_backend, current_active_user, fastapi_users
+
+# -----------------------------------------------------------------------------
+
+# create a request ID for all requests
+request_id_contextvar = contextvars.ContextVar("request_id", default=None)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
 # -----------------------------------------------------------------------------
 
 # Create the FastAPI app
 logger.info("STARTING: FastAPI `app` creation...")
+
 app = FastAPI(title=APP_NAME, 
               version=APP_VERSION)
-
-# create a request ID for all requests
-request_id_contextvar = contextvars.ContextVar("request_id", default=None)
 
 # -----------------------------------------------------------------------------
 
@@ -41,16 +48,6 @@ async def startup_event():
     request_id = str(uuid.uuid4())
     #request_id_contextvar.set(request_id) # TODO: not working
     logger.info(f"App startup. Request [{request_id}]].")
-
-    # turn off collation on client to avoid errors
-    client = pymongo.MongoClient(MONGODB_ENDPOINT_URL)
-    await init_beanie(
-        client,
-        database=db,
-        document_models=[
-            User,
-        ],
-    )
 
 @app.on_event("shutdown")
 async def shutdown_event():
@@ -109,38 +106,11 @@ logger.info("COMPLETE: Adding middleware...")
 
 # Add routers
 logger.info("STARTING: Adding routers...")
-
-# app.include_router(
-#     fastapi_users.get_auth_router(auth_backend), 
-#     prefix="/auth/jwt", 
-#     tags=["auth"]
-# )
-# app.include_router(
-#     fastapi_users.get_register_router(UserRead, UserCreate),
-#     prefix="/auth",
-#     tags=["auth"],
-# )
-# app.include_router(
-#     fastapi_users.get_reset_password_router(),
-#     prefix="/auth",
-#     tags=["auth"],
-# )
-# app.include_router(
-#     fastapi_users.get_verify_router(UserRead),
-#     prefix="/auth",
-#     tags=["auth"],
-# )
-# app.include_router(
-#     fastapi_users.get_users_router(UserRead, UserUpdate),
-#     prefix="/users",
-#     tags=["users"],
-# )
-
 app.include_router(upload.router)
 app.include_router(query.router)
 app.include_router(metadata.router)
-app.include_router(debug.router) # not returning false on failure
-
+app.include_router(debug.router)
+app.include_router(auth.router)
 logger.info("COMPLETE: Adding routers...")
 
 # -----------------------------------------------------------------------------
@@ -148,4 +118,4 @@ logger.info("COMPLETE: Adding routers...")
 # Add health check endpoint
 @app.get("/", status_code=200)
 async def get_health():
-    return {"status": "ok"}
+    return {"status": "ok", "deployment": APP_DEPLOYMENT, "version": APP_VERSION}

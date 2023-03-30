@@ -8,7 +8,6 @@ from ..lib.log import logger
 from ..lib.storage import *
 from ..lib.depends import *
 from ..lib.notify import *
-from ..lib.users import *
 from ..lib.constants import *
 
 router = APIRouter(

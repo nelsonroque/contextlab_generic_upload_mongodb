@@ -1,10 +1,10 @@
 from typing import Union
 from fastapi import FastAPI, APIRouter
+from ..lib.authdb import *
 from ..lib.depends import *
 from ..lib.storage import *
 from ..models.base import *
 from ..models.schemas import *
-from ..lib.users import *
 
 router = APIRouter(
     prefix="/metadata",
@@ -13,7 +13,7 @@ router = APIRouter(
 
 # # get unique by field endpoint
 @router.post("/unique/{field}")
-async def get_unique_fields(field, query: UploadQuery, user: User = Depends(current_active_user)):
+async def get_unique_fields(field, query: UploadQuery, user: Annotated[User, Depends(get_current_active_user)]):
     logger.info(f"About to query for unique values in field `{field}` by user = `{user}`.")
     logger.info(f"Query: {query}")
     results, total = query_distinct_values("data", query, field)
@@ -29,7 +29,7 @@ async def get_unique_fields(field, query: UploadQuery, user: User = Depends(curr
     return results_pr
 
 @router.post("/count/{field}")
-async def count_unique_values(field, query: UploadQuery, user: User = Depends(current_active_user)):
+async def count_unique_values(field, query: UploadQuery, user: Annotated[User, Depends(get_current_active_user)]):
     logger.info(f"About to query for unique values in field `{field}` by user = `{user}`.")
     logger.info(f"Query: {query}")
 

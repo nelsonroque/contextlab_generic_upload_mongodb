@@ -83,8 +83,10 @@ CORS_ORIGINS = [
 
 DEFAULT_HTML_RESPONSE = {"Content-Type": "text/html", "Access-Control-Allow-Origin": "*"}
 
-SECRET_USERAUTH = os.getenv("SECRET_USERAUTH")
-JWT_EXPIRY_SECS = os.getenv("JWT_EXPIRY_SECS")
+SECRET_KEY = os.getenv("SECRET_KEY")
+ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+ALGORITHM = os.getenv("ALGORITHM")
+ADMIN_EMAILS = ["nelson.roque@ucf.edu", "nelsonroquejr@gmail.com"]
 
 logger.info("All constants read")
 logger.info("App deployment: " + APP_DEPLOYMENT)
