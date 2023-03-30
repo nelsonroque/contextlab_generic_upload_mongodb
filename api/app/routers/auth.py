@@ -16,6 +16,8 @@ router = APIRouter(
 
 client = pymongo.MongoClient(MONGODB_ENDPOINT_URL)
 db = client[AUTH_DB]
+db.users.create_index("username", unique=True)
+db.users.create_index("email", unique=True)
 
 @router.post("/register")
 async def sign_up(
