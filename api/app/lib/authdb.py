@@ -17,8 +17,6 @@ db.users.create_index([('email', ASCENDING)], unique=True)
 def get_password_hash(password):
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
     ph = pwd_context.hash(password)
-    print(f"Password: {password}")
-    print(f"Hashed Password: {ph}")
     return ph
 
 def verify_password(plain_password, hashed_password):
@@ -53,7 +51,11 @@ def create_user(db, form_data: OAuth2PasswordRequestForm, additional_data: Addit
 def get_user(db, username: str):
     user = db.users.find_one({"username": username})
     print("User found (get_user)!")
-    print(user)
+    return user
+
+def find_user_by_email(db, email: str):
+    user = db.users.find_one({"email": email})
+    print("User found (find_user_by_email)!")
     return user
 
 def get_user_otp(db, otp: str):
@@ -64,12 +66,12 @@ def authenticate_user(db, username: str, password: str):
     print("Authenticating user...")
     user = get_user(db, username)
     print("User found!")
-    # if not user:
-    #     print("User not found!")
-    #     return False
-    # if not verify_password(password, user.hashed_password):
-    #     print("User not authenticated!")
-    #     return False
+    if 'username' not in user:
+        print("User not found!")
+        return False
+    if not verify_password(password, user.get("hashed_password")):
+        print("User not authenticated!")
+        return False
     print("User authenticated!")
     return user
 
@@ -116,6 +118,13 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         raise credentials_exception
     return user
 
+def update_password(db, user_id, email, hashed_password):
+    validated_email = db.users.find_one({'uid': user_id, 'email': email})
+    if not validated_email:
+        return False
+    else:
+        db.users.update_one({'uid': user_id}, {'$set': {'hashed_password': hashed_password}})
+    return True
 
 async def get_current_active_user(
     current_user: Annotated[User, Depends(get_current_user)]

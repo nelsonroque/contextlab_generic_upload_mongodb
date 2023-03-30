@@ -4,8 +4,9 @@ import random
 import io
 import base64
 #import qrcode
-
+from datetime import datetime, date
 from .constants import *
+import pytz
 
 def gen_uid(len=UID_LENGTH):
   # available for search
@@ -46,3 +47,9 @@ def gen_base64_qr_code(urlstr):
     buffered.flush()
     #img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
     return urlstr#"data:image/svg;base64," + img_str
+
+def get_current_year() -> int:
+    return date.today().year
+
+def gen_current_ts_pytz():
+    return datetime.now(pytz.timezone(SYSTEM_TIMEZONE)).strftime("%Y-%m-%d %H:%M:%S")

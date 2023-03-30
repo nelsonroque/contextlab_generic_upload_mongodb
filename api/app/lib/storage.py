@@ -4,6 +4,16 @@ import pymongo
 from .constants import *
 from .log import logger
 
+def init_pymongo(dbname):
+    # Connect to MongoDB
+    client = pymongo.MongoClient(MONGODB_ENDPOINT_URL)
+    db = client[dbname]
+
+    # Check the version
+    version = pymongo.__version__
+    logger.info("Connected to MongoDB | pymongo version: %s", version)
+    return db
+
 # Establish DocumentDB connection
 # TODO: make a dependency
 def init_mongodb():

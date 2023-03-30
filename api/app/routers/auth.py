@@ -16,8 +16,8 @@ router = APIRouter(
 
 client = pymongo.MongoClient(MONGODB_ENDPOINT_URL)
 db = client[AUTH_DB]
-db.users.create_index("username", unique=True)
-db.users.create_index("email", unique=True)
+# db.users.create_index("username", unique=True)
+# db.users.create_index("email", unique=True)
 
 @router.post("/register")
 async def sign_up(
@@ -28,6 +28,16 @@ async def sign_up(
     user = create_user(db, form_data, additional_data)
     print("Inserted record into MongoDB")
     return {"msg": "User created successfully"}
+
+@router.post("/reset_password")
+async def reset_password(email: str, form_data: OAuth2PasswordRequestForm = Depends()):
+    user = find_user_by_email(db, email)
+    if user:
+        hashed_password = get_password_hash(form_data.password)
+        update_password(db, user["uid"], email, hashed_password)
+        return {"msg": "Password reset successfully"}
+    else:
+        return {"msg": "User not found"}
 
 @router.get("/whoami")
 async def login_for_access_token_otp(token: Annotated[str, Depends(oauth2_scheme)]):

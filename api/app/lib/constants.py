@@ -90,3 +90,5 @@ ADMIN_EMAILS = ["nelson.roque@ucf.edu", "nelsonroquejr@gmail.com"]
 
 logger.info("All constants read")
 logger.info("App deployment: " + APP_DEPLOYMENT)
+
+SYSTEM_TIMEZONE = "America/New_York"

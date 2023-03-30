@@ -4,6 +4,7 @@ from pymongo import IndexModel
 from ..lib.utils import *
 from datetime import datetime
 import uuid as uuidp
+from enum import Enum
 
 # 📚 CUSTOM LIBRARY
 
@@ -99,3 +100,85 @@ class Upload(ObjectIdentifiers):
         ]
 
     pass
+
+class ActivityType(str, Enum):
+    HTML = 'html'
+    MARKDOWN = 'markdown'
+    YOUTUBE = 'youtube'
+    JSPSYCH = 'jspsych'
+    SURVEYJS = 'surveyjs'
+    IMAGE = 'image'
+    IMAGE_BASE64 = 'image_base64'
+    IFRAME = 'iframe'
+    REDIRECT = 'redirect'
+
+class UID(BaseModel):
+    id_: str = Field(default_factory=gen_uuid_str)
+    uid: str = Field(default_factory=gen_uid)
+    uuid: str = gen_uuid_str()
+
+class BaseHead(UID):
+    created_year: int = get_current_year()
+    created_ts: Optional[str] = gen_current_ts_pytz()
+
+class Descriptors(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+
+class Params(UID):
+    key: str
+    value: Optional[str] = None
+    
+class Notification(BaseHead, Descriptors):
+    channel: str
+    notify: bool = False
+    notify_at: Optional[str] = None
+    message: str = "No message"
+
+class NotificationLog(BaseHead):
+    channel: str
+    notify_at: Optional[str] = None
+    notification_uid: Optional[str] = None
+    user_uid: Optional[str] = None
+    sent_at: Optional[str] = None
+
+class Study(BaseHead,Descriptors):
+    user_uid: str
+    affiliation: Optional[str] = None
+    primary_color: Optional[str] = None
+    secondary_color: Optional[str] = None
+    font_color: Optional[str] = None
+    font_family: Optional[str] = None
+    
+class Event(BaseHead,Descriptors):
+    activity_uid: str
+    user_uid: str
+    start_ts: Optional[str] = None
+    end_ts: Optional[str] = None
+    notifications: Optional[List[Notification]] = None
+
+class Activity(BaseHead,Descriptors):
+    user_uid: str
+    wordcode: Optional[str] = gen_wordcode()
+    cover_img_base64: Optional[str] = None
+    activity_type: Optional[ActivityType] = None
+    content: Optional[str] = None
+    params: Optional[List[Params]] = None
+    URL: Optional[URL] = None
+    is_deeplink = False
+    _json: Optional[str] = None
+
+class User2(BaseHead):
+    api_key: Optional[str] = gen_uuid_str()
+    wordcode: Optional[str] = gen_wordcode()
+    otp: Optional[str] = gen_otp()
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    #email: Optional[EmailStr] = None
+    mobile_phone: Optional[str] = None
+    is_superuser: bool = False
+    is_active: bool = True
+    is_researcher: bool = False
+    is_tester: bool = False
+    is_participant: bool = False
+    is_admin: bool = False

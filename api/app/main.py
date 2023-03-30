@@ -13,7 +13,7 @@ import uuid
 import contextvars
 
 # rest of API library
-from .routers import metadata, query, debug, upload, auth
+from .routers import metadata, query, debug, upload, auth, create
 from .lib.constants import *
 from .lib.depends import logger
 
@@ -111,6 +111,7 @@ app.include_router(query.router)
 app.include_router(metadata.router)
 app.include_router(debug.router)
 app.include_router(auth.router)
+app.include_router(create.router)
 logger.info("COMPLETE: Adding routers...")
 
 # -----------------------------------------------------------------------------

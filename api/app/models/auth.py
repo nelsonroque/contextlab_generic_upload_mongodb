@@ -38,6 +38,10 @@ class User(BaseModel):
     last_name: Optional[str]
     affiliation: Optional[str]
     disabled: bool = False
+    is_superuser: bool = False
+    is_researcher: bool = False
+    is_developer: bool = False
+    is_admin: bool = False
     studies: List[str] = []
 
     class Config:
