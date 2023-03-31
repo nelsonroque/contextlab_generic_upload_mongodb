@@ -182,3 +182,13 @@ class User2(BaseHead):
     is_tester: bool = False
     is_participant: bool = False
     is_admin: bool = False
+
+# Base class for the input request schema
+class OTPRequest(BaseModel):
+    email: str = None
+    phone_number: str = None
+
+# Base class for the output response schema
+class OTPResponse(BaseModel):
+    success: bool
+    message: str

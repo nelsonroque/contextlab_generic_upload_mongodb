@@ -92,3 +92,8 @@ logger.info("All constants read")
 logger.info("App deployment: " + APP_DEPLOYMENT)
 
 SYSTEM_TIMEZONE = "America/New_York"
+
+# TWILIO ----------------------------------------------------------------
+TWILIO_ACCOUNT_SID=os.getenv("TWILIO_ACCOUNT_SID")
+TWILIO_AUTH_TOKEN=os.getenv("TWILIO_AUTH_TOKEN")
+TWILIO_PHONE_NUMBER=os.getenv("TWILIO_PHONE_NUMBER")

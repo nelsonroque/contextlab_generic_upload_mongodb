@@ -41,3 +41,21 @@ async def get_user_list(token: Annotated[str, Depends(oauth2_scheme)]):
     else:
         # return an unauthroized error with response code using fastapi httpexception
         return {"error": "You do not have permission to access this endpoint."}
+
+@router.get("/user-list/{study}", response_model=List[UserInDB])
+async def get_user_list_by_study(study: str, token: Annotated[str, Depends(oauth2_scheme)]):
+    user = decode_token(token)
+    print(user)
+    print("About to check if user is in admin list")
+    if user.get("email", None) in ADMIN_EMAILS:
+        client = pymongo.MongoClient(MONGODB_ENDPOINT_URL)
+        auth_db = client[AUTH_DB]
+        print("Finding users for study: " + study)
+        users = auth_db.users.aggregate([{ "$match": { "studies": study } }])
+        if users is not None:
+            return list(users)
+        else:
+            return {"error": f"No users found for study: {study}"}
+    else:
+        # return an unauthroized error with response code using fastapi httpexception
+        return {"error": "You do not have permission to access this endpoint."}
