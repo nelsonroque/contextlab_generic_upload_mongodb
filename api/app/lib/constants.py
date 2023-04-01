@@ -57,6 +57,7 @@ PROD_DB_RETRYWRITES = os.getenv("PROD_DB_RETRYWRITES")
 
 DATA_DB = os.getenv("DATA_DB")
 AUTH_DB = os.getenv("AUTH_DB")
+LOG_DB = os.getenv("LOG_DB")
 
 ## DEPLOYMENT PROFILES ----------------------------------------------------------------
 if APP_DEPLOYMENT == "dev":

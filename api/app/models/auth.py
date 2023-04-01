@@ -11,6 +11,7 @@ from datetime import datetime
 import uuid as uuidp
 from pymongo import IndexModel, ASCENDING, DESCENDING
 
+
 @dataclass
 class AdditionalUserDataForm:
     email: str = Form(None)
@@ -18,6 +19,7 @@ class AdditionalUserDataForm:
     first_name: str = Form(None)
     last_name: str = Form(None)
     affiliation: str = Form(None)
+
 
 class Token(BaseModel):
     access_token: str
@@ -40,6 +42,7 @@ class User(BaseModel):
     disabled: bool = False
     is_superuser: bool = False
     is_researcher: bool = False
+    is_participant: bool = False
     is_developer: bool = False
     is_admin: bool = False
     studies: List[str] = []

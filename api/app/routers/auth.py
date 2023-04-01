@@ -8,16 +8,13 @@ from random import randint
 from ..lib.authdb import *
 from ..models.auth import *
 
-router = APIRouter(
-    prefix="/auth",
-    tags=["authentication"],
-    responses={}
-)
+router = APIRouter(prefix="/auth", tags=["authentication"], responses={})
 
 client = pymongo.MongoClient(MONGODB_ENDPOINT_URL)
 db = client[AUTH_DB]
 # db.users.create_index("username", unique=True)
 # db.users.create_index("email", unique=True)
+
 
 @router.post("/register")
 async def sign_up(
@@ -29,6 +26,7 @@ async def sign_up(
     print("Inserted record into MongoDB")
     return {"msg": "User created successfully"}
 
+
 @router.post("/reset_password")
 async def reset_password(email: str, form_data: OAuth2PasswordRequestForm = Depends()):
     user = find_user_by_email(db, email)
@@ -39,10 +37,12 @@ async def reset_password(email: str, form_data: OAuth2PasswordRequestForm = Depe
     else:
         return {"msg": "User not found"}
 
+
 @router.get("/whoami")
 async def login_for_access_token_otp(token: Annotated[str, Depends(oauth2_scheme)]):
     tk = decode_token(token)
     return tk
+
 
 @router.post("/token", response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
@@ -59,17 +59,23 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     access_token_expires = timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
     print("Access token expires")
     access_token = create_access_token(
-        data={"sub": user.get("username"),
-              "email": user.get("email"),
-              "studies": user.get("studies"),
-              "uid": user.get("uid")}, expires_delta=access_token_expires
+        data={
+            "sub": user.get("username"),
+            "email": user.get("email"),
+            "studies": user.get("studies"),
+            "uid": user.get("uid"),
+        },
+        expires_delta=access_token_expires,
     )
     tk = {"access_token": access_token, "token_type": "bearer"}
     print(tk)
     return tk
 
+
 @router.post("/update-email/{uid}")
-async def update_user_email(uid: str, email:str, token: Annotated[str, Depends(oauth2_scheme)]):
+async def update_user_email(
+    uid: str, email: str, token: Annotated[str, Depends(oauth2_scheme)]
+):
     print(f"Adding email to user's studies list")
     user = decode_token(token)
     print(user)
@@ -90,8 +96,11 @@ async def update_user_email(uid: str, email:str, token: Annotated[str, Depends(o
     else:
         return {"error": "You do not have permission to access this endpoint."}
 
+
 @router.post("/allow/{email}")
-async def add_study_to_user(email: str, study:str, token: Annotated[str, Depends(oauth2_scheme)]):
+async def add_study_to_user(
+    email: str, study: str, token: Annotated[str, Depends(oauth2_scheme)]
+):
     print(f"Adding study {study} to user's studies list")
     user = decode_token(token)
     print(user)
@@ -111,21 +120,28 @@ async def add_study_to_user(email: str, study:str, token: Annotated[str, Depends
             return {"error": f"User with email: {email} not found"}
 
         # Add the study to the user's studies list
-        if 'studies' not in user_r:
-            user_r['studies'] = []  # Initialize the studies list if it doesn't exist yet
+        if "studies" not in user_r:
+            user_r[
+                "studies"
+            ] = []  # Initialize the studies list if it doesn't exist yet
 
-        if study not in user_r['studies']:
-            user_r['studies'].append(study)
+        if study not in user_r["studies"]:
+            user_r["studies"].append(study)
             # Update the user record in the database
-            db['users'].update_one({"email": email}, {"$set": user_r})
+            db["users"].update_one({"email": email}, {"$set": user_r})
             return "Success"
         else:
-            return {"error": f"User with email: {email} already has access to study: {study}"}
+            return {
+                "error": f"User with email: {email} already has access to study: {study}"
+            }
     else:
         return {"error": "You do not have permission to access this endpoint."}
+
 
 @router.post("/deny/{email}")
-async def remove_study_from_user(email: str, study:str, token: Annotated[str, Depends(oauth2_scheme)]):
+async def remove_study_from_user(
+    email: str, study: str, token: Annotated[str, Depends(oauth2_scheme)]
+):
     print(f"Adding study {study} to user's studies list")
     user = decode_token(token)
     print(user)
@@ -145,19 +161,23 @@ async def remove_study_from_user(email: str, study:str, token: Annotated[str, De
             return {"error": f"User with email: {email} not found"}
 
         # Add the study to the user's studies list
-        if 'studies' not in user_r:
-            user_r['studies'] = []  # Initialize the studies list if it doesn't exist yet
+        if "studies" not in user_r:
+            user_r[
+                "studies"
+            ] = []  # Initialize the studies list if it doesn't exist yet
 
-        if study in user_r['studies']:
-            user_r['studies'].remove(study)
+        if study in user_r["studies"]:
+            user_r["studies"].remove(study)
             # Update the user record in the database
-            db['users'].update_one({"email": email}, {"$set": user_r})
+            db["users"].update_one({"email": email}, {"$set": user_r})
             return "Success"
         else:
-            return {"error": f"User with email: {email} does not currently have access to study: {study}"}
+            return {
+                "error": f"User with email: {email} does not currently have access to study: {study}"
+            }
     else:
         return {"error": "You do not have permission to access this endpoint."}
-    
+
 
 # Endpoint for sending the OTP
 @router.post("/otp/request")
@@ -166,21 +186,30 @@ async def request_otp(otp_request: OTPRequest):
     otp = str(randint(100000, 999999))
     client = pymongo.MongoClient(MONGODB_ENDPOINT_URL)
     db = client[AUTH_DB]
-    db.users.update_one({"email": otp_request.email}, {"$set": {"otp": otp, "otp_generated_at": datetime.now()}})
-    db.otp_logs.insert_one({"email": otp_request.email, "otp": otp, "otp_generated_at": datetime.now()})
+    db.users.update_one(
+        {"email": otp_request.email},
+        {"$set": {"otp": otp, "otp_generated_at": datetime.now()}},
+    )
+    db.otp_logs.insert_one(
+        {"email": otp_request.email, "otp": otp, "otp_generated_at": datetime.now()}
+    )
     message = "Your OTP is: " + otp
 
     # Send the OTP to the user via SMS
     if otp_request.phone_number:
         send_sms_twilio_simple(otp_request.phone_number, message)
     else:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Please provide a valid phone number.")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Please provide a valid phone number.",
+        )
 
     return OTPResponse(success=True, message="OTP sent successfully.")
 
+
 # Endpoint for verifying the OTP and generating a JWT
 @router.post("/otp/verify")
-async def verify_otp(otp:str, form_data: OAuth2PasswordRequestForm = Depends()):
+async def verify_otp(otp: str, form_data: OAuth2PasswordRequestForm = Depends()):
     # Verify the OTP provided by the user
     print("Verifying OTP")
     client = pymongo.MongoClient(MONGODB_ENDPOINT_URL)
@@ -189,19 +218,28 @@ async def verify_otp(otp:str, form_data: OAuth2PasswordRequestForm = Depends()):
     user = db.users.find_one({"username": form_data.username, "otp": otp})
     print("Found user")
     print(user)
-    if user is not None and "username" in user:  # Replace with your own validation logic
+    if (
+        user is not None and "username" in user
+    ):  # Replace with your own validation logic
         # Generate a JWT token
         otp = str(randint(100000, 999999))
-        db.users.update_one({"username": user.get("username")}, {"$set": {"otp": otp, "otp_generated_at": datetime.now()}})
+        db.users.update_one(
+            {"username": user.get("username")},
+            {"$set": {"otp": otp, "otp_generated_at": datetime.now()}},
+        )
         access_token_expires = timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
         print("Access token expires")
         access_token = create_access_token(
-            data={"sub": user.get("username"),
+            data={
+                "sub": user.get("username"),
                 "email": user.get("email"),
                 "studies": user.get("studies"),
-                "uid": user.get("uid")}, 
-                expires_delta=access_token_expires
+                "uid": user.get("uid"),
+            },
+            expires_delta=access_token_expires,
         )
         return {"access_token": access_token, "token_type": "bearer"}
     else:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid OTP.")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid OTP."
+        )

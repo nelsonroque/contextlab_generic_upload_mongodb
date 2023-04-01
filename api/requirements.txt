@@ -11,3 +11,4 @@ passlib[bcrypt]
 python-multipart
 pytz
 twilio
+boto3

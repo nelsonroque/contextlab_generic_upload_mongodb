@@ -13,13 +13,12 @@ import uuid
 import contextvars
 
 # rest of API library
-from .routers import metadata, query, debug, upload, auth, create
+from .routers import metadata, query, debug, upload, auth, create, jobs
 from .lib.constants import *
 from .lib.depends import logger
 
 # auth library
 from .lib.authdb import *
-from .models.schemas import *
 
 # -----------------------------------------------------------------------------
 
@@ -68,39 +67,39 @@ app.add_middleware(
 )
 
 # add request ID middleware
-@app.middleware("http")
-async def request_middleware(request, call_next):
-    request_id = str(uuid.uuid4())
-    request_id_contextvar.set(request_id)
+# @app.middleware("http")
+# async def request_middleware(request, call_next):
+#     request_id = str(uuid.uuid4())
+#     request_id_contextvar.set(request_id)
 
-    request_url = request.url
-    request_method = request.method
-    request_query_params = request.query_params
-    request_path_params = request.path_params
-    request_client_address = request.client.host
-    request_headers = request.headers
-    #request_state = request.state
+#     request_url = request.url
+#     request_method = request.method
+#     request_query_params = request.query_params
+#     request_path_params = request.path_params
+#     request_client_address = request.client.host
+#     request_headers = request.headers
+#     #request_state = request.state
 
-    logger.info(f"Request [{request_id}] started")
-    logger.info(f"Request [{request_id}] client address: {request_client_address}")
-    logger.info(f"Request [{request_id}] URL: {request_url}")
-    logger.info(f"Request [{request_id}] method: {request_method}")
-    logger.info(f"Request [{request_id}] headers: {request_headers}")
-    logger.info(f"Request [{request_id}] query params: {request_query_params}")
-    logger.info(f"Request [{request_id}] path params: {request_path_params}")
-    #logger.info(f"Request [{request_id}] state: {request_state}")
+#     logger.info(f"Request [{request_id}] started")
+#     logger.info(f"Request [{request_id}] client address: {request_client_address}")
+#     logger.info(f"Request [{request_id}] URL: {request_url}")
+#     logger.info(f"Request [{request_id}] method: {request_method}")
+#     logger.info(f"Request [{request_id}] headers: {request_headers}")
+#     logger.info(f"Request [{request_id}] query params: {request_query_params}")
+#     logger.info(f"Request [{request_id}] path params: {request_path_params}")
+#     #logger.info(f"Request [{request_id}] state: {request_state}")
 
-    try:
-        response = await call_next(request)
-        response.headers["X-Request-ID"] = request_id
-        return response
-    except Exception as ex:
-        logger.info(f"Request [{request_id}] failed: {ex}")
-    finally:
-        assert request_id_contextvar.get() == request_id
-        logger.info(f"Request [{request_id}] ended")
+#     try:
+#         response = await call_next(request)
+#         response.headers["X-Request-ID"] = request_id
+#         return response
+#     except Exception as ex:
+#         logger.info(f"Request [{request_id}] failed: {ex}")
+#     finally:
+#         assert request_id_contextvar.get() == request_id
+#         logger.info(f"Request [{request_id}] ended")
 
-logger.info("COMPLETE: Adding middleware...")
+# logger.info("COMPLETE: Adding middleware...")
 
 # -----------------------------------------------------------------------------
 
@@ -112,6 +111,7 @@ app.include_router(metadata.router)
 app.include_router(debug.router)
 app.include_router(auth.router)
 app.include_router(create.router)
+app.include_router(jobs.router)
 logger.info("COMPLETE: Adding routers...")
 
 # -----------------------------------------------------------------------------

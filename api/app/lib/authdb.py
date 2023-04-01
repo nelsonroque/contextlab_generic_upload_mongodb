@@ -2,7 +2,6 @@ from typing import Annotated
 import pymongo
 from .constants import *
 from ..models.auth import *
-from ..models.schemas import *
 from .log import logger
 from datetime import datetime, timedelta
 

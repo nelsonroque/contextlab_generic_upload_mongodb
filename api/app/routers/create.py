@@ -14,7 +14,9 @@ from ..models.base import User2, Study, Activity, Event
 router = APIRouter(
     prefix="/create",
     tags=["create"],
-    responses={500: {"description": "huge mystery..."}})
+    responses={500: {"description": "huge mystery..."}},
+)
+
 
 # Create things
 @router.post("/participant")
@@ -28,19 +30,23 @@ async def create_user(user: User2, token: Annotated[str, Depends(oauth2_scheme)]
     else:
         return "You are not authorized to create a participant"
 
+
 @router.post("/study")
 async def create_study(study: Study, token: Annotated[str, Depends(oauth2_scheme)]):
     user = decode_token(token)
     print(user)
     if user.get("email") in ADMIN_EMAILS:
-        db = init_pymongo(DATA_DB)  
+        db = init_pymongo(DATA_DB)
         db.studies.insert_one(study.dict())
         return "Study created"
     else:
         return "You are not authorized to create a study"
 
+
 @router.post("/activity")
-async def create_activity(activity: Activity, token: Annotated[str, Depends(oauth2_scheme)]):
+async def create_activity(
+    activity: Activity, token: Annotated[str, Depends(oauth2_scheme)]
+):
     user = decode_token(token)
     print(user)
     if user.get("email") in ADMIN_EMAILS:
@@ -49,6 +55,7 @@ async def create_activity(activity: Activity, token: Annotated[str, Depends(oaut
         return "Activity created"
     else:
         return "You are not authorized to create an activity"
+
 
 @router.post("/event")
 async def create_event(event: Event, token: Annotated[str, Depends(oauth2_scheme)]):

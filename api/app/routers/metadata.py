@@ -4,7 +4,6 @@ from ..lib.authdb import *
 from ..lib.depends import *
 from ..lib.storage import *
 from ..models.base import *
-from ..models.schemas import *
 
 router = APIRouter(
     prefix="/metadata",
