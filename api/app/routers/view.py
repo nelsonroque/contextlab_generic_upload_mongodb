@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel, Json
 from starlette.status import *
 
-from ..lib.authdb import *
+from ..lib.auth import *
 from ..lib.storage import *
 from ..lib.constants import *
 from ..lib.log import *
@@ -20,8 +20,8 @@ router = APIRouter(
 async def view_activity(uid, token: Annotated[str, Depends(oauth2_scheme)]):
     user = decode_token(token)
     print(user)
-    if user.get("email") in ADMIN_EMAILS:
-        db = init_pymongo(DATA_DB)
+    if user.get("email") in Settings.ADMIN_EMAILS:
+        db = init_pymongo(Settings.DATA_DB)
         result = db.activities.find_one({"uid": uid})
         return result
     else:

@@ -1,18 +1,16 @@
 import uuid
 import string
 import random
+from datetime import datetime, date
+import pytz
+
 import io
 import base64
 #import qrcode
-from datetime import datetime, date
+
 from .constants import *
-from .storage import *
-from .authdb  import *
-import pytz
-from twilio.rest import Client
 
-
-def gen_uid(len=UID_LENGTH):
+def gen_uid(len=Settings.UID_LENGTH):
   # available for search
   lower = string.ascii_lowercase
   upper = string.ascii_uppercase
@@ -36,6 +34,12 @@ def gen_otp(len_1=3,len_2=3,delim="-"):
   word2 = "".join(random.sample(num,len_2))
   return f"{word1}{delim}{word2}".upper()
 
+def get_current_year() -> int:
+    return date.today().year
+
+def gen_current_ts_pytz():
+    return datetime.now(pytz.timezone(Settings.SYSTEM_TIMEZONE)).strftime("%Y-%m-%d %H:%M:%S")
+
 # def gen_base64_qr_code(urlstr):
 #     qr = qrcode.QRCode(
 #         version=1,
@@ -51,33 +55,3 @@ def gen_otp(len_1=3,len_2=3,delim="-"):
 #     buffered.flush()
 #     #img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
 #     return urlstr#"data:image/svg;base64," + img_str
-
-def get_current_year() -> int:
-    return date.today().year
-
-def gen_current_ts_pytz():
-    return datetime.datetime.now(pytz.timezone(SYSTEM_TIMEZONE)).strftime("%Y-%m-%d %H:%M:%S")
-
-def send_sms_twilio_simple(phone, message):
-    # Compose the message
-    logger.info("Message: %s", message)
-
-    # Connect to MongoDB
-    #db = init_pymongo(AUTH_DB)
-
-    # Connect to Twilio
-    client_twilio = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-    logger.info("Connected to Twilio")
-
-    # Send the SMS
-    try:
-        event_status = "sent"
-        message = client_twilio.messages.create(
-            body=message, 
-            from_=TWILIO_PHONE_NUMBER, 
-            to=phone
-        )
-        logger.info("SMS sent to %s", phone)
-    except:
-        event_status = "failed"
-        logger.info("Failed to send SMS to %s", phone)

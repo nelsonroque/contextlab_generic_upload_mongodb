@@ -13,31 +13,38 @@ import uuid
 import contextvars
 
 # rest of API library
-from .routers import metadata, query, debug, upload, auth, create, jobs
+from .routers import metadata, query, debug, upload, auth, create, jobs, m2c2kit
 from .lib.constants import *
 from .lib.depends import logger
+from .models.base import *
 
 # auth library
-from .lib.authdb import *
+from .lib.auth import *
 
 # -----------------------------------------------------------------------------
 
 # create a request ID for all requests
 request_id_contextvar = contextvars.ContextVar("request_id", default=None)
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=Settings.AUTH_TOKEN_URL)
 
 # -----------------------------------------------------------------------------
 
 # Create the FastAPI app
 logger.info("STARTING: FastAPI `app` creation...")
+app = FastAPI(title=Settings.APP_NAME, version=Settings.APP_VERSION)
+# TODO: consider subapps: https://fastapi.tiangolo.com/advanced/sub-applications/
 
-app = FastAPI(title=APP_NAME, 
-              version=APP_VERSION)
+# - mount no-toolchain approach
+app.mount("/m2c2kit/ntc", StaticFiles(directory="app/m2c2kit/ntc"), name="m2c2kit_no_toolchain")
+app.mount("/m2c2kit/sequence", StaticFiles(directory="app/m2c2kit/sequence"), name="m2c2kit_no_toolchain_seq")
+print("MOUNTED: m2c2kit_no_toolchain")
+
 
 # -----------------------------------------------------------------------------
 
 # MOUNT FILES
-app.mount("/share", StaticFiles(directory="app/share"), name="shared_files")
+logger.info("STARTING: Mounting folders")
+app.mount(f"/{Settings.SHARED_FOLDER}", StaticFiles(directory=f"app/{Settings.SHARED_FOLDER}"), name="shared_files")
 
 # -----------------------------------------------------------------------------
 
@@ -45,7 +52,7 @@ app.mount("/share", StaticFiles(directory="app/share"), name="shared_files")
 @app.on_event("startup")
 async def startup_event():
     request_id = str(uuid.uuid4())
-    #request_id_contextvar.set(request_id) # TODO: not working
+    # request_id_contextvar.set(request_id) # TODO: not working
     logger.info(f"App startup. Request [{request_id}]].")
 
 @app.on_event("shutdown")
@@ -66,41 +73,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# add request ID middleware
-# @app.middleware("http")
-# async def request_middleware(request, call_next):
-#     request_id = str(uuid.uuid4())
-#     request_id_contextvar.set(request_id)
-
-#     request_url = request.url
-#     request_method = request.method
-#     request_query_params = request.query_params
-#     request_path_params = request.path_params
-#     request_client_address = request.client.host
-#     request_headers = request.headers
-#     #request_state = request.state
-
-#     logger.info(f"Request [{request_id}] started")
-#     logger.info(f"Request [{request_id}] client address: {request_client_address}")
-#     logger.info(f"Request [{request_id}] URL: {request_url}")
-#     logger.info(f"Request [{request_id}] method: {request_method}")
-#     logger.info(f"Request [{request_id}] headers: {request_headers}")
-#     logger.info(f"Request [{request_id}] query params: {request_query_params}")
-#     logger.info(f"Request [{request_id}] path params: {request_path_params}")
-#     #logger.info(f"Request [{request_id}] state: {request_state}")
-
-#     try:
-#         response = await call_next(request)
-#         response.headers["X-Request-ID"] = request_id
-#         return response
-#     except Exception as ex:
-#         logger.info(f"Request [{request_id}] failed: {ex}")
-#     finally:
-#         assert request_id_contextvar.get() == request_id
-#         logger.info(f"Request [{request_id}] ended")
-
-# logger.info("COMPLETE: Adding middleware...")
-
 # -----------------------------------------------------------------------------
 
 # Add routers
@@ -112,11 +84,21 @@ app.include_router(debug.router)
 app.include_router(auth.router)
 app.include_router(create.router)
 app.include_router(jobs.router)
+app.include_router(m2c2kit.router)
 logger.info("COMPLETE: Adding routers...")
 
 # -----------------------------------------------------------------------------
 
 # Add health check endpoint
-@app.get("/", status_code=200)
+@app.get("/", status_code=200, response_model=HealthCheckResponse)
 async def get_health():
-    return {"status": "ok", "deployment": APP_DEPLOYMENT, "version": APP_VERSION}
+    s = HealthCheckResponse(
+        status="ok",
+        deployment=Settings.APP_DEPLOYMENT,
+        version=Settings.APP_VERSION,
+        docs={
+            "openapi": f"{Settings.INSTALL_URL}/docs",
+            "redoc": f"{Settings.INSTALL_URL}/redoc",
+        },
+    )
+    return s

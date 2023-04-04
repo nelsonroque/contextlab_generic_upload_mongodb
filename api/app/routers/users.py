@@ -1,1 +1,0 @@
-# add study_uid to user 'studies' property

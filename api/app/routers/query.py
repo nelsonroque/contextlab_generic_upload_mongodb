@@ -10,7 +10,7 @@ from ..lib.log import logger
 from ..lib.storage import *
 from ..lib.depends import *
 from ..lib.notify import *
-from ..lib.authdb import *
+from ..lib.auth import *
 
 router = APIRouter(
     prefix="/query",

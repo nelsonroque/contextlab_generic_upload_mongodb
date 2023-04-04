@@ -2,7 +2,7 @@ from typing import Union
 from fastapi import FastAPI, APIRouter
 from ..lib.depends import *
 from ..lib.storage import *
-from ..lib.authdb import *
+from ..lib.auth import *
 from ..models.base import *
 
 router = APIRouter(
@@ -17,8 +17,8 @@ async def get_database_collections(
 ):
     user = decode_token(token)
     print(user)
-    if user.get("email") in ADMIN_EMAILS:
-        client = pymongo.MongoClient(MONGODB_ENDPOINT_URL)
+    if user.get("email") in Settings.ADMIN_EMAILS:
+        client = pymongo.MongoClient(Settings.MONGODB_ENDPOINT_URL)
         db = client[db]
         rc = db.list_collection_names()
         collections = ", ".join(rc)
@@ -33,9 +33,9 @@ async def get_database_collections(
 async def get_user_list(token: Annotated[str, Depends(oauth2_scheme)]):
     user = decode_token(token)
     print(user)
-    if user.get("email") in ADMIN_EMAILS:
-        client = pymongo.MongoClient(MONGODB_ENDPOINT_URL)
-        db = client[AUTH_DB]
+    if user.get("email") in Settings.ADMIN_EMAILS:
+        client = pymongo.MongoClient(Settings.MONGODB_ENDPOINT_URL)
+        db = client[Settings.AUTH_DB]
         users = list(db.users.find())
         print("Found users")
         print(users)
@@ -53,9 +53,9 @@ async def get_user_list_by_study(
     user = decode_token(token)
     print(user)
     print("About to check if user is in admin list")
-    if user.get("email", None) in ADMIN_EMAILS:
-        client = pymongo.MongoClient(MONGODB_ENDPOINT_URL)
-        auth_db = client[AUTH_DB]
+    if user.get("email", None) in Settings.ADMIN_EMAILS:
+        client = pymongo.MongoClient(Settings.MONGODB_ENDPOINT_URL)
+        auth_db = client[Settings.AUTH_DB]
         print("Finding users for study: " + study)
         users = auth_db.users.aggregate([{"$match": {"studies": study}}])
         if users is not None:

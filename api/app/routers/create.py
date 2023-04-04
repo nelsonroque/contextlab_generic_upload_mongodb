@@ -5,7 +5,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel, Json
 from starlette.status import *
 
-from ..lib.authdb import *
+from ..lib.auth import *
 from ..lib.storage import *
 from ..lib.constants import *
 from ..lib.log import *
@@ -23,8 +23,8 @@ router = APIRouter(
 async def create_user(user: User2, token: Annotated[str, Depends(oauth2_scheme)]):
     user = decode_token(token)
     print(user)
-    if user.get("email") in ADMIN_EMAILS:
-        db = init_pymongo(DATA_DB)
+    if user.get("email") in Settings.ADMIN_EMAILS:
+        db = init_pymongo(Settings.DATA_DB)
         db.participants.insert_one(user.dict())
         return "Participant created"
     else:
@@ -35,8 +35,8 @@ async def create_user(user: User2, token: Annotated[str, Depends(oauth2_scheme)]
 async def create_study(study: Study, token: Annotated[str, Depends(oauth2_scheme)]):
     user = decode_token(token)
     print(user)
-    if user.get("email") in ADMIN_EMAILS:
-        db = init_pymongo(DATA_DB)
+    if user.get("email") in Settings.ADMIN_EMAILS:
+        db = init_pymongo(Settings.DATA_DB)
         db.studies.insert_one(study.dict())
         return "Study created"
     else:
@@ -49,8 +49,8 @@ async def create_activity(
 ):
     user = decode_token(token)
     print(user)
-    if user.get("email") in ADMIN_EMAILS:
-        db = init_pymongo(DATA_DB)
+    if user.get("email") in Settings.ADMIN_EMAILS:
+        db = init_pymongo(Settings.DATA_DB)
         db.activities.insert_one(activity.dict())
         return "Activity created"
     else:
@@ -61,8 +61,8 @@ async def create_activity(
 async def create_event(event: Event, token: Annotated[str, Depends(oauth2_scheme)]):
     user = decode_token(token)
     print(user)
-    if user.get("email") in ADMIN_EMAILS:
-        db = init_pymongo(DATA_DB)
+    if user.get("email") in Settings.ADMIN_EMAILS:
+        db = init_pymongo(Settings.DATA_DB)
         db.events.insert_one(event.dict())
         return "Event created"
     else:

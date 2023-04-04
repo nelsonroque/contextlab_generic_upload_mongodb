@@ -17,4 +17,4 @@ COPY ./app/rds-combined-ca-bundle.pem /code/rds-combined-ca-bundle.pem
 COPY ./app /code/app
 
 # run server
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80", "--workers", "4", "--reload"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80", "--workers", "4"]

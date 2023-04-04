@@ -1,6 +1,6 @@
 from typing import Union
 from fastapi import FastAPI, APIRouter
-from ..lib.authdb import *
+from ..lib.auth import *
 from ..lib.depends import *
 from ..lib.storage import *
 from ..models.base import *

@@ -5,16 +5,20 @@ from ..models.base import *
 from ..lib.log import logger
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from random import randint
-from ..lib.authdb import *
+from ..lib.auth import *
 from ..models.auth import *
 
 router = APIRouter(prefix="/auth", tags=["authentication"], responses={})
 
-client = pymongo.MongoClient(MONGODB_ENDPOINT_URL)
-db = client[AUTH_DB]
+client = pymongo.MongoClient(Settings.MONGODB_ENDPOINT_URL)
+db = client[Settings.AUTH_DB]
 # db.users.create_index("username", unique=True)
 # db.users.create_index("email", unique=True)
 
+@router.get("/whoami")
+async def login_for_access_token_otp(token: Annotated[str, Depends(oauth2_scheme)]):
+    tk = decode_token(token)
+    return tk
 
 @router.post("/register")
 async def sign_up(
@@ -26,7 +30,6 @@ async def sign_up(
     print("Inserted record into MongoDB")
     return {"msg": "User created successfully"}
 
-
 @router.post("/reset_password")
 async def reset_password(email: str, form_data: OAuth2PasswordRequestForm = Depends()):
     user = find_user_by_email(db, email)
@@ -36,13 +39,6 @@ async def reset_password(email: str, form_data: OAuth2PasswordRequestForm = Depe
         return {"msg": "Password reset successfully"}
     else:
         return {"msg": "User not found"}
-
-
-@router.get("/whoami")
-async def login_for_access_token_otp(token: Annotated[str, Depends(oauth2_scheme)]):
-    tk = decode_token(token)
-    return tk
-
 
 @router.post("/token", response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
@@ -56,7 +52,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
             headers={"WWW-Authenticate": "Bearer"},
         )
     print("==============")
-    access_token_expires = timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
+    access_token_expires = timedelta(minutes=int(Settings.ACCESS_TOKEN_EXPIRE_MINUTES))
     print("Access token expires")
     access_token = create_access_token(
         data={
@@ -80,11 +76,11 @@ async def update_user_email(
     user = decode_token(token)
     print(user)
     print("===============")
-    if user.get("email") in ADMIN_EMAILS:
+    if user.get("email") in Settings.ADMIN_EMAILS:
         logger.info("Connecting to MongoDB")
         print("Connecting to MongoDB")
-        client = pymongo.MongoClient(MONGODB_ENDPOINT_URL)
-        auth_db = client[AUTH_DB]
+        client = pymongo.MongoClient(Settings.MONGODB_ENDPOINT_URL)
+        auth_db = client[Settings.AUTH_DB]
         user2 = auth_db.users.find_one({"uid": uid})
         if user2 is not None:
             auth_db.users.update_one({"uid": uid}, {"$set": {"email": email}})
@@ -104,12 +100,12 @@ async def add_study_to_user(
     print(f"Adding study {study} to user's studies list")
     user = decode_token(token)
     print(user)
-    if user.get("email") in ADMIN_EMAILS:
+    if user.get("email") in Settings.ADMIN_EMAILS:
         logger.info("Connecting to MongoDB")
-        client = pymongo.MongoClient(MONGODB_ENDPOINT_URL)
-        db = client[AUTH_DB]
+        client = pymongo.MongoClient(Settings.MONGODB_ENDPOINT_URL)
+        db = client[Settings.AUTH_DB]
         logger.info(db)
-        logger.info(AUTH_DB)
+        logger.info(Settings.AUTH_DB)
         logger.info("Connected to MongoDB!")
 
         user_r = db.users.find_one({"email": email})
@@ -145,12 +141,12 @@ async def remove_study_from_user(
     print(f"Adding study {study} to user's studies list")
     user = decode_token(token)
     print(user)
-    if user.get("email") in ADMIN_EMAILS:
+    if user.get("email") in Settings.ADMIN_EMAILS:
         logger.info("Connecting to MongoDB")
-        client = pymongo.MongoClient(MONGODB_ENDPOINT_URL)
-        db = client[AUTH_DB]
+        client = pymongo.MongoClient(Settings.MONGODB_ENDPOINT_URL)
+        db = client[Settings.AUTH_DB]
         logger.info(db)
-        logger.info(AUTH_DB)
+        logger.info(Settings.AUTH_DB)
         logger.info("Connected to MongoDB!")
 
         user_r = db.users.find_one({"email": email})
@@ -184,8 +180,8 @@ async def remove_study_from_user(
 async def request_otp(otp_request: OTPRequest):
     # Generate a random 6-digit OTP
     otp = str(randint(100000, 999999))
-    client = pymongo.MongoClient(MONGODB_ENDPOINT_URL)
-    db = client[AUTH_DB]
+    client = pymongo.MongoClient(Settings.MONGODB_ENDPOINT_URL)
+    db = client[Settings.AUTH_DB]
     db.users.update_one(
         {"email": otp_request.email},
         {"$set": {"otp": otp, "otp_generated_at": datetime.now()}},
@@ -212,8 +208,8 @@ async def request_otp(otp_request: OTPRequest):
 async def verify_otp(otp: str, form_data: OAuth2PasswordRequestForm = Depends()):
     # Verify the OTP provided by the user
     print("Verifying OTP")
-    client = pymongo.MongoClient(MONGODB_ENDPOINT_URL)
-    db = client[AUTH_DB]
+    client = pymongo.MongoClient(Settings.MONGODB_ENDPOINT_URL)
+    db = client[Settings.AUTH_DB]
     print("Connected to MongoDB!")
     user = db.users.find_one({"username": form_data.username, "otp": otp})
     print("Found user")
@@ -227,7 +223,7 @@ async def verify_otp(otp: str, form_data: OAuth2PasswordRequestForm = Depends())
             {"username": user.get("username")},
             {"$set": {"otp": otp, "otp_generated_at": datetime.now()}},
         )
-        access_token_expires = timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
+        access_token_expires = timedelta(minutes=int(Settings.ACCESS_TOKEN_EXPIRE_MINUTES))
         print("Access token expires")
         access_token = create_access_token(
             data={

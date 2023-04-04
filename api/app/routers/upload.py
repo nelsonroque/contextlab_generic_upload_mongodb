@@ -20,6 +20,10 @@ router = APIRouter(
 @router.post("/", response_model = UID)
 async def upload_activity_data(upload: Upload):
     logger.info(f"[STARTING] Data upload")
-    results = insertone_mongodb_collection(COLLECTION_DATA, upload)
-    logger.info(f"[COMPLETE] Data upload")
-    return upload
+    try:
+        results = insertone_mongodb_collection(Settings.COLLECTION_DATA, upload)
+        logger.info(f"[COMPLETE] Data upload")
+        return upload
+    except:
+        logger.error(f"[ERROR] Data upload")
+        raise HTTPException(status_code=500, detail="Data upload failed")

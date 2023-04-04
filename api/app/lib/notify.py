@@ -1,24 +1,33 @@
 import requests
 from .log import logger
+from .constants import *
 
-async def send_teams_webhook(msg):
-    logger.info("STARTING: Send Teams Webhook")
+# notification clients
+from twilio.rest import Client
 
-#https://github.com/Delgan/loguru#no-handler-no-formatter-no-filter-one-function-to-rule-them-all
-# import notifiers
+async def send_teams_webhook(webhook, message):
+    logger.info(f"STARTING: Send Teams Webhook to {webhook} with message: {message}")
 
-# params = {
-#     "username": "you@gmail.com",
-#     "password": "abc123",
-#     "to": "dest@gmail.com"
-# }
+def send_sms_twilio_simple(phone, message):
+    # Compose the message
+    logger.info("Message: %s", message)
 
-# # Send a single notification
-# notifier = notifiers.get_notifier("gmail")
-# notifier.notify(message="The application is running!", **params)
+    # Connect to MongoDB
+    #db = init_pymongo(AUTH_DB)
 
-# # Be alerted on each error message
-# from notifiers.logging import NotificationHandler
+    # Connect to Twilio
+    client_twilio = Client(Settings.TWILIO_ACCOUNT_SID, Settings.TWILIO_AUTH_TOKEN)
+    logger.info("Connected to Twilio")
 
-# handler = NotificationHandler("gmail", defaults=params)
-# logger.add(handler, level="ERROR")
+    # Send the SMS
+    try:
+        event_status = "sent"
+        message = client_twilio.messages.create(
+            body=message, 
+            from_=Settings.TWILIO_PHONE_NUMBER, 
+            to=phone
+        )
+        logger.info("SMS sent to %s", phone)
+    except:
+        event_status = "failed"
+        logger.info("Failed to send SMS to %s", phone)

@@ -1,18 +1,43 @@
-from pydantic import BaseModel, Field, Json
+from pydantic import BaseModel, Field, Json, HttpUrl, AnyUrl
+from pydantic.dataclasses import dataclass
+
 from typing import List, Optional
-from pymongo import IndexModel
-from ..lib.utils import *
+from pymongo import IndexModel, ASCENDING, DESCENDING
 from datetime import datetime
 import uuid as uuidp
 from enum import Enum
 
+from fastapi import Depends, FastAPI, HTTPException, status, Form
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+
+from jose import JWTError, jwt
+from passlib.context import CryptContext
+
 # 📚 CUSTOM LIBRARY
+from ..lib.utils import *
 
 # -----------------------------------------------------------------------------
 # BASE MODELS
 # Organized alphabetically (with adjustments to accomodate inheritance).
 # -----------------------------------------------------------------------------
 
+@dataclass
+class AdditionalUserDataForm:
+    email: str = Form(None)
+    phone_number: str = Form(None)
+    first_name: str = Form(None)
+    last_name: str = Form(None)
+    affiliation: str = Form(None)
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    username: str
+    studies: List[str]
 
 class ObjectIdentifiers(BaseModel):
     uuid: str = Field(default_factory=gen_uuid_str)
@@ -110,6 +135,32 @@ class Upload(ObjectIdentifiers):
     pass
 
 
+class M2C2Upload(ObjectIdentifiers):
+    # identify the data
+    event_type: Optional[str]
+    data_json: Optional[Json]
+    data_base64: Optional[str]
+    data_binary: Optional[str]
+    data_list: Optional[List[str]]
+
+    # identify the session
+    study_uid: Optional[str]
+    activity_id: Optional[str]
+    session_uid: Optional[str]
+    session_uuid: Optional[str]
+    user_uid: str
+    
+    api_key: str
+    activity_uid: str
+    activity_name: str
+    activity_version: str
+    activity_url: str
+    activity_engine: str
+    activity_engine_version: str
+    activity_schema: str
+    event_type: str
+    metadata: str
+
 class ActivityType(str, Enum):
     HTML = "html"
     MARKDOWN = "markdown"
@@ -186,6 +237,29 @@ class Activity(BaseHead, Descriptors):
     is_deeplink = False
     _json: Optional[str] = None
 
+class User(BaseModel):
+    created_utc: datetime = Field(default_factory=datetime.now)
+    uid: Optional[str] = Field(default_factory=gen_uid)
+    username: str
+    email: Optional[str]
+    first_name: Optional[str]
+    last_name: Optional[str]
+    affiliation: Optional[str]
+    disabled: bool = False
+    is_superuser: bool = False
+    is_researcher: bool = False
+    is_participant: bool = False
+    is_developer: bool = False
+    is_admin: bool = False
+    studies: List[str] = []
+
+    class Config:
+        indexes = [
+            IndexModel([("uid", ASCENDING)], unique=True),
+            IndexModel([("email", ASCENDING)], unique=True),
+        ]
+class UserInDB(User):
+    hashed_password: str
 
 class User2(BaseHead):
     api_key: Optional[str] = gen_uuid_str()
@@ -233,3 +307,13 @@ class JobStatus(BaseModel):
     uuid: str
     status_checked: Optional[List[JobCheck]] = []
     result: Optional[str] = None
+
+class Docs(BaseModel):
+    openapi: AnyUrl
+    redoc: AnyUrl
+
+class HealthCheckResponse(BaseModel):
+    status: str
+    deployment: str
+    version: str
+    docs: Docs

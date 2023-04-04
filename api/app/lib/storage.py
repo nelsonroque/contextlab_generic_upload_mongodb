@@ -6,7 +6,7 @@ from .log import logger
 
 def init_pymongo(dbname):
     # Connect to MongoDB
-    client = pymongo.MongoClient(MONGODB_ENDPOINT_URL)
+    client = pymongo.MongoClient(Settings.MONGODB_ENDPOINT_URL)
     db = client[dbname]
 
     # Check the version
@@ -18,14 +18,14 @@ def init_pymongo(dbname):
 # TODO: make a dependency
 def init_mongodb():
     logger.info("Connecting to MongoDB")
-    client = pymongo.MongoClient(MONGODB_ENDPOINT_URL)
-    db = client[DATA_DB]
+    client = pymongo.MongoClient(Settings.MONGODB_ENDPOINT_URL)
+    db = client[Settings.DATA_DB]
     logger.info("Connected to MongoDB!")
     return client, db
 
 def init_mongodb_collection(table):
     client, db = init_mongodb()
-    if table in VALID_COLLECTIONS:
+    if table in Settings.VALID_COLLECTIONS:
         collection = db[table]
         logger.info(f"Connection complete | {client} | {db} | {collection}.")
         return client, db, collection
@@ -81,10 +81,10 @@ def query_mongodb_collection(db_collection, query):
 
 def bring_limit_to_limit_if_not(limit):
     logger.info("Attempting to bring limit to limit if not")
-    if limit > QUERY_SKIP_LIMIT:
-        limit = QUERY_SKIP_LIMIT
+    if limit > Settings.QUERY_SKIP_LIMIT:
+        limit = Settings.QUERY_SKIP_LIMIT
     elif limit is None:
-        limit = QUERY_SKIP_LIMIT
+        limit = Settings.QUERY_SKIP_LIMIT
     else:
         limit = limit
     logger.info("limit is now")

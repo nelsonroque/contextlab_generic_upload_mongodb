@@ -5,7 +5,7 @@ from .constants import *
 # TODO: add date param
 # TODO: add start_date, end_date, order (asc, desc), format (json, csv)
 async def common_parameters(
-    skip: int = 0, limit: int = QUERY_SKIP_LIMIT
+    skip: int = 0, limit: int = Settings.QUERY_SKIP_LIMIT
 ):
     return {"skip": skip, "limit": limit}
 

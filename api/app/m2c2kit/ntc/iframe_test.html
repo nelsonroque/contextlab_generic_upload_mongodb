@@ -1,0 +1,29 @@
+<html>
+
+<head>
+    <title>iFrame Data Transfer Test | Context Lab x M2C2</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+</head>
+
+<body>
+    <iframe src="m2c2/" width="100%" height="100%"></iframe>
+    <script>
+        // Listen for the "done" message from the iframe
+        window.addEventListener('message', function (event) {
+
+            if (event.data === 'm2c2kit-done') {
+                // Do something when the "done" message is received
+                console.log("Event received in parent window!: " + event.data)
+                confetti({
+                    particleCount: 100,
+                    spread: 80,
+                    origin: { y: 0.6 }
+                });
+            } else {
+                console.log("Event received in parent window!: " + event.data)
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -10,8 +10,10 @@ import json
 import boto3
 from botocore.exceptions import ClientError
 
-from ..lib.authdb import *
-from ..lib.storage import *
+from ..lib.db import *
+from ..lib.auth import *
+#from ..lib.storage import *
+from ..lib.notify import *
 from ..lib.constants import *
 from ..lib.depends import *
 from ..lib.log import *
@@ -33,6 +35,11 @@ router = APIRouter(
     prefix="/job", tags=["jobs"], responses={500: {"description": "huge mystery..."}}
 )
 
+def update_job_result(uuid, psu):
+    query = {"uuid": uuid}
+    update = {"$set": {"result": psu}}
+    jobs_db = init_pymongo(Settings.LOG_DB)
+    jobs_db.jobs.update_one(query, update)
 
 def update_job_record(uuid, user, status):
     query = {"uuid": uuid}
@@ -48,7 +55,7 @@ def update_job_record(uuid, user, status):
     # TODO: add a check to see if the job is locked before editing
 
     # update the document with the specified _id
-    jobs_db = init_pymongo(LOG_DB)
+    jobs_db = init_pymongo(Settings.LOG_DB)
     jobs_db.jobs.update_one(query, update)
 
 
@@ -140,17 +147,17 @@ def query_upload_s3(
     print(psu)
     print("S3 pre-signed URL added to job record")
     # update to include presigned URL as 'result' field
+    update_job_result(job_uuid, psu)
     #update_job_record()
 
 
 @router.post("/status/{uuid}", response_model=JobStatus)
 async def job_status(uuid, token: Annotated[str, Depends(oauth2_scheme)]):
-    user = decode_token(token)
-    print(user)
-    if user.get("email") in ADMIN_EMAILS:
-        jobs_db = init_pymongo(LOG_DB)
+    is_admin = is_admin(token)
+    if is_admin:
         print("Updating job status that check is in progress")
         # define the update operation using the $push operator
+        user = decode_token(token)
         query = {"uuid": uuid}
         update = {
             "$push": {
@@ -164,6 +171,7 @@ async def job_status(uuid, token: Annotated[str, Depends(oauth2_scheme)]):
         # TODO: add a check to see if the job is locked before editing
 
         # update the document with the specified _id
+        jobs_db = init_pymongo(Settings.LOG_DB)
         jobs_db.jobs.update_one(query, update)
         job = jobs_db.jobs.find_one({"uuid": uuid})
         job.pop("_id", None)
@@ -187,8 +195,8 @@ async def create_job(
     user = decode_token(token)
     print(user)
 
-    if user.get("email") in ADMIN_EMAILS:
-        db = init_pymongo(LOG_DB)
+    if user.get("email") in Settings.ADMIN_EMAILS:
+        db = init_pymongo(Settings.LOG_DB)
         print("Creating job")
         job_ = Job(
             user_uid=user.get("uid"),

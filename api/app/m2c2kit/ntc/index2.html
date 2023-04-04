@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-store, max-age=0" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- <link href="assets/css/m2c2kit.css" rel="preload" as="style" />
+  <link href="assets/css/m2c2kit.css" rel="stylesheet" /> -->
+  <!-- If you are not using the m2c2kit survey functionality,
+      remove css files below here -->
+  <!--<link href="assets/css/defaultV2.css" rel="stylesheet" />
+  <link href="assets/css/nouislider.css" rel="stylesheet" />
+  <link href="assets/css/select2.css" rel="stylesheet" />
+  <link href="assets/css/bootstrap-datepicker.standalone.css" rel="stylesheet" />
+  <link href="assets/css/bootstrap-slider.css" rel="stylesheet" /> -->
+  <!-- If you are not using the m2c2kit survey functionality,
+      remove css files above here -->
+  <script type="module" async>
+
+    import { ActivityType, EventType, Session } from "./lib/m2c2kit.core.esm.js";
+    import { SymbolSearch } from "https://api.contextlab.daytah.io/m2c2kit/ntc/lib/m2c2kit.assessment-symbol-search.esm.min.js";
+    import { GridMemory } from "https://api.contextlab.daytah.io/m2c2kit/ntc/lib/m2c2kit.assessment-grid-memory.esm.min.js";
+    import { ColorDots } from "https://api.contextlab.daytah.io/m2c2kit/ntc/lib/m2c2kit.assessment-color-dots.esm.min.js";
+    import { SessionUtils } from "https://api.contextlab.daytah.io/m2c2kit/ntc/SessionUtils.js";
+
+    // GET URL Params here
+    // based on URL params, select task for study
+    const overlay_qs = window.location.search;
+    const overlay_params = new URLSearchParams(overlay_qs);
+
+    // extract specific URL params
+    const activity_name = overlay_params.get("activity_name") || "symbol-search";
+    const n_trials = overlay_params.get("n_trials") || 1;
+    const show_quit = overlay_params.get("show_quit") || 0;
+    let activity_instance;
+
+    // setup task based on URL
+    switch (activity_name) {
+      case "symbol-search":
+        activity_instance = new SymbolSearch();
+        break;
+      case "grid-memory":
+        activity_instance = new GridMemory();
+        break;
+      case "color-dots":
+        activity_instance = new ColorDots();
+        break;
+      default:
+        console.log("invalid activity");
+    }
+
+    // specify task params
+    console.log("setting parameters from URL");
+    activity_instance.setParameters({ number_of_trials: Number(n_trials), show_quit_button: show_quit });
+
+    // specify content for session
+    const session = new Session({
+      canvasKitWasmUrl: "assets/canvaskit.wasm",
+      activities: [activity_instance],
+      activityCallbacks: {
+        onActivityLifecycle: (ev) => {
+          if (
+            ev.type === EventType.ActivityEnd ||
+            ev.type === EventType.ActivityCancel
+          ) {
+            const nextActivity = session.nextActivity;
+            if (nextActivity) {
+              session.advanceToNextActivity();
+            } else {
+              session.end();
+            }
+          }
+        },
+        onActivityResults: (ev) => {
+          if (ev.target.type === ActivityType.Game) {
+            console.log(`âœ… trial complete:`);
+          } else if (ev.target.type === ActivityType.Survey) {
+            console.log(`âœ… survey response:`);
+          }
+
+          const trials = ev.data.trials;
+          const sessionParams = SessionUtils.getSessionParams();
+          SessionUtils.addSessionParamsToTrials(trials, sessionParams);
+          SessionUtils.addSessionParamsToDataSchema(ev.dataSchema);
+          //SessionUtils.uploadData(ev, sessionParams);
+        },
+      },
+      sessionCallbacks: {
+        onSessionLifecycle: (ev) => {
+          if (ev.type === EventType.SessionInitialize) {
+            session.start();
+            window.parent.postMessage('m2c2kit-start', '*');
+          }
+          if (ev.type === EventType.SessionEnd) {
+            console.log("ðŸ”´ ended session");
+
+            // Send the "done" message to the parent window
+            window.parent.postMessage('m2c2kit-done', '*');
+            console.log("ðŸ”´ sent done message to parent window");
+          }
+        },
+      },
+    });
+
+    window.session = session;
+    session.init().then(() => {
+      const loaderDiv = document.getElementById("m2c2kit-loader-div");
+      if (loaderDiv) {
+        loaderDiv.classList.remove("m2c2kit-loader");
+      }
+    });
+
+
+  </script>
+</head>
+
+<body class="m2c2kit-background-color m2c2kit-no-margin">
+  <div id="m2c2kit-survey-div"></div>
+  <div class="m2c2kit-full-viewport m2c2kit-flex-container" id="m2c2kit-canvas-div">
+    <canvas class="m2c2kit-full-viewport" id="m2c2kit-canvas"></canvas>
+    <div class="m2c2kit-loader" id="m2c2kit-loader-div"></div>
+  </div>
+</body>
+
+</html>

@@ -11,3 +11,11 @@
 ```
 
 # On hold
+- replace any constants with new version keys
+- if admin emails as dependency injection
+- sample.env
+- write docs from directory structure
+- write docs from openapi spec
+- tidy up model returns
+- standardize commenting syntax
+- redo database
