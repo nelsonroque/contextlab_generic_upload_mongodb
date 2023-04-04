@@ -39,7 +39,6 @@ app.mount("/m2c2kit/ntc", StaticFiles(directory="app/m2c2kit/ntc"), name="m2c2ki
 app.mount("/m2c2kit/sequence", StaticFiles(directory="app/m2c2kit/sequence"), name="m2c2kit_no_toolchain_seq")
 print("MOUNTED: m2c2kit_no_toolchain")
 
-
 # -----------------------------------------------------------------------------
 
 # MOUNT FILES

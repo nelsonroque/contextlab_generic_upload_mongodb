@@ -226,16 +226,21 @@ class Event(BaseHead, Descriptors):
     notifications: Optional[List[Notification]] = None
 
 
+class Content(BaseModel):
+    html: Optional[str] = None
+    js: Optional[str] = None
+    css: Optional[str] = None
+    json_: Optional[str] = None
+    params: Optional[List[Params]] = None
+    URL: Optional[URL] = None
+
+
 class Activity(BaseHead, Descriptors):
     user_uid: str
     wordcode: Optional[str] = gen_wordcode()
     cover_img_base64: Optional[str] = None
     activity_type: Optional[ActivityType] = None
-    content: Optional[str] = None
-    params: Optional[List[Params]] = None
-    URL: Optional[URL] = None
-    is_deeplink = False
-    _json: Optional[str] = None
+    content: Optional[Content] = None
 
 class User(BaseModel):
     created_utc: datetime = Field(default_factory=datetime.now)
