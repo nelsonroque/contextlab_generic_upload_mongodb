@@ -42,6 +42,7 @@ def scrub_mongo_id(cursor):
 def insertone_mongodb_collection(db_collection, query):
     client, db, collection = init_mongodb_collection(str(db_collection))
     db_results = collection.insert_one(query.dict())
+    print(query.dict())
     logger.info("Successfully inserted data")
     client.close()
     return query

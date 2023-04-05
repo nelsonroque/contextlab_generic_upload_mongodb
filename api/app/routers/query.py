@@ -3,6 +3,9 @@ from fastapi import FastAPI, APIRouter
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, Json
 from starlette.status import *
+from fastapi.responses import StreamingResponse # Add to Top
+import pandas as pd
+import json
 
 from ..models.base import *
 from ..lib.constants import *
@@ -18,9 +21,11 @@ router = APIRouter(
     responses={500: {"description": "huge mystery what is wrong..."}})
 
 # Query activity data
-@router.post("/", response_model = PaginatedReturn)
-async def get_uploads_with_skip_limit_filtering(query: UploadQuery, token: Annotated[str, Depends(oauth2_scheme)], commons: dict = Depends(common_parameters)):
+
+@router.post("/")
+async def get_uploads_with_skip_limit_filtering(format: str, query: UploadQuery, token: Annotated[str, Depends(oauth2_scheme)], commons: dict = Depends(common_parameters)):
     collection_to_query = "data"
+    unnest_json = False
     user = decode_token(token)
     skip = commons.get("skip")
     limit = commons.get("limit")
@@ -53,6 +58,33 @@ async def get_uploads_with_skip_limit_filtering(query: UploadQuery, token: Annot
             limit = int(limit)
         )
         logger.info("Results validated with Pydantic.")
+        if format in ["csv", ".csv", "CSV"]:
+            df = pd.DataFrame(results)
+            
+            if unnest_json:
+                try:
+                    # normalize the JSON data
+                    data_df = pd.json_normalize(df['data_json'])
+
+                    # merge the normalized data with the original dataframe
+                    merged_df = pd.concat([df, data_df], axis=1)
+
+                    # drop the original data_json column
+                    merged_df.drop(columns=['data_json'], inplace=True)
+                    return StreamingResponse(
+                    iter([merged_df.to_csv(index=False)]),
+                    media_type="text/csv",
+                    headers={"Content-Disposition": f"attachment; filename=data.csv"})
+                except:
+                    return StreamingResponse(
+                    iter([df.to_csv(index=False)]),
+                    media_type="text/csv",
+                    headers={"Content-Disposition": f"attachment; filename=data.csv"})
+            else:
+                return StreamingResponse(
+                iter([df.to_csv(index=False)]),
+                media_type="text/csv",
+                headers={"Content-Disposition": f"attachment; filename=data.csv"}) 
         return results_pr
     else:
         logger.error("Study UID in query does not match study list in API key.")

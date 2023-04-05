@@ -35,7 +35,7 @@ router = APIRouter(
 # -----------------------------------------------------------------------------
 
 # prepare homepage
-@router.get("/", tags=["homepage"])
+@router.get("/")
 async def render_homepage():
     logger.info("[STARTING] Render page: `homepage`")
     html = HTML_HOMEPAGE
@@ -45,7 +45,7 @@ async def render_homepage():
     return HTMLResponse(html_template_string, status_code=200, headers={"Content-Type": "text/html", "Access-Control-Allow-Origin": "*"})
 
 
-@router.get("/custom", tags=["homepage"])
+@router.get("/custom")
 async def render_custom():
     html = HTML_HOMEPAGE_2
     template = Template(html)
@@ -56,7 +56,7 @@ async def render_custom():
 
 # run m2c2kit activities
 # TODO: look more into caching with fastapi (not too long, goldilocks zone)
-@router.get("/c/{task_name}", tags=["runner"])
+@router.get("/c/{task_name}")
 async def render_activity(
         task_name, 
         #admin_type: Union[str, None] = "qualtrics", 
@@ -93,7 +93,7 @@ async def render_activity(
         logger.info(f"[API-KEY] {valid_api_key}")
         raise HTTPException(status_code=404, detail=f"Invalid study API key.")
 
-@router.get("/s", tags=["runner"])
+@router.get("/s")
 async def render_activity(
         order: Union[str, None] = None,  
         api_key: Union[str, None] = None, 

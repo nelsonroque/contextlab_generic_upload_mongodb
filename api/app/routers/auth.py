@@ -10,6 +10,10 @@ from ..models.auth import *
 
 router = APIRouter(prefix="/auth", tags=["authentication"], responses={})
 
+# read data, create user, update user, delete user, login, logout, reset password, change password, verify email, forgot password, etc.
+# query
+# return ids
+
 client = pymongo.MongoClient(Settings.MONGODB_ENDPOINT_URL)
 db = client[Settings.AUTH_DB]
 # db.users.create_index("username", unique=True)

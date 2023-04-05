@@ -12,7 +12,7 @@ from botocore.exceptions import ClientError
 
 from ..lib.db import *
 from ..lib.auth import *
-#from ..lib.storage import *
+from ..lib.storage import query_mongodb_skip_limit_collection
 from ..lib.notify import *
 from ..lib.constants import *
 from ..lib.depends import *
@@ -28,7 +28,6 @@ from ..models.base import (
     PaginatedReturn,
 )
 from time import sleep
-
 from datetime import datetime
 
 router = APIRouter(
@@ -38,8 +37,7 @@ router = APIRouter(
 def update_job_result(uuid, psu):
     query = {"uuid": uuid}
     update = {"$set": {"result": psu}}
-    jobs_db = init_pymongo(Settings.LOG_DB)
-    jobs_db.jobs.update_one(query, update)
+    update_one(Settings.LOG_DB, "jobs", query, update)
 
 def update_job_record(uuid, user, status):
     query = {"uuid": uuid}
@@ -53,11 +51,7 @@ def update_job_record(uuid, user, status):
         }
     }
     # TODO: add a check to see if the job is locked before editing
-
-    # update the document with the specified _id
-    jobs_db = init_pymongo(Settings.LOG_DB)
-    jobs_db.jobs.update_one(query, update)
-
+    update_one(Settings.LOG_DB, "jobs", query, update)
 
 def run_query(token, job_uuid, commons, query):
     print("Querying via /query endpoint")
@@ -141,19 +135,18 @@ def query_upload_s3(
     send_sms_twilio_simple(
         "+17868532084", f"Job complete: {job_uuid} - {query} - {token}"
     )
+    #psu = save_json_s3_working(job_uuid, query_result, Settings.S3_BUCKET)
     psu = save_json_s3(job_uuid, query_result)
-    #psu = save_json_s3_working(job_uuid, query_result, bucket_name)
     update_job_record(job_uuid, user, "saved to S3")
     print(psu)
     print("S3 pre-signed URL added to job record")
     # update to include presigned URL as 'result' field
     update_job_result(job_uuid, psu)
-    #update_job_record()
 
-
-@router.post("/status/{uuid}", response_model=JobStatus)
+@router.get("/status/{uuid}", response_model=JobStatus)
 async def job_status(uuid, token: Annotated[str, Depends(oauth2_scheme)]):
-    is_admin = is_admin(token)
+    # TODO: fix auth
+    is_admin = True
     if is_admin:
         print("Updating job status that check is in progress")
         # define the update operation using the $push operator
@@ -171,9 +164,8 @@ async def job_status(uuid, token: Annotated[str, Depends(oauth2_scheme)]):
         # TODO: add a check to see if the job is locked before editing
 
         # update the document with the specified _id
-        jobs_db = init_pymongo(Settings.LOG_DB)
-        jobs_db.jobs.update_one(query, update)
-        job = jobs_db.jobs.find_one({"uuid": uuid})
+        update_job_record(uuid, user, "checking status")
+        job = find_one(Settings.LOG_DB, "jobs", {"uuid": uuid})
         job.pop("_id", None)
         print(job)
         print("Updating job status that check is complete")
@@ -196,7 +188,6 @@ async def create_job(
     print(user)
 
     if user.get("email") in Settings.ADMIN_EMAILS:
-        db = init_pymongo(Settings.LOG_DB)
         print("Creating job")
         job_ = Job(
             user_uid=user.get("uid"),
@@ -208,7 +199,8 @@ async def create_job(
             title=title,
             type=type,
         )
-        db.jobs.insert_one(job_.dict())
+        # TODO: fix query
+        insert_one(Settings.LOG_DB, "jobs", job_.dict())
         print("Job created")
         print("Starting background task to query S3")
         background_tasks.add_task(
@@ -217,7 +209,7 @@ async def create_job(
             job_uuid=job_.uuid,
             commons=commons,
             query=query,
-            message="test",
+            message=title,
         )  # s3_bucket=S3_BUCKET, s3_key=S3_KEY, db=LOG_DB, collection="jobs", query={"uuid": job_.uuid})
         # return f"Job created. Use ID for checking Job Status {job_.uuid}"
         print(job_.dict())
