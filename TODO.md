@@ -19,3 +19,9 @@
 - tidy up model returns
 - standardize commenting syntax
 - redo database
+
+- generate user_uid for study_uid (for participants)
+- rethink access control
+  - types of users: researcher and participant are mainly necessary
+- multiple deployments
+- Github secret, AWS KMS

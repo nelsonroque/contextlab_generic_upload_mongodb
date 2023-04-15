@@ -77,7 +77,7 @@ class Settings(BaseSettings):
 
     # JWT ----------------------------------------------------------------
     AUTH_TOKEN_URL = os.getenv("AUTH_TOKEN_URL")
-    SECRET_KEY = os.getenv("SECRET_KEY")
+    SECRET_KEY = os.getenv("SECRET_KEY") # used to sign JWT, TODO: move to AWS KMS
     ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
     ALGORITHM = os.getenv("ALGORITHM")
     CRYPTCONTEXT = os.getenv("CRYPTCONTEXT")

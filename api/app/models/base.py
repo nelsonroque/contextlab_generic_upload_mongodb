@@ -29,11 +29,9 @@ class AdditionalUserDataForm:
     last_name: str = Form(None)
     affiliation: str = Form(None)
 
-
 class Token(BaseModel):
     access_token: str
     token_type: str
-
 
 class TokenData(BaseModel):
     username: str
@@ -45,14 +43,11 @@ class ObjectIdentifiers(BaseModel):
     created_tz_est: datetime = Field(default_factory=get_tz_est)
     uid: Optional[str] = Field(default_factory=gen_uid)
 
-
 class UID(BaseModel):
     uid: str
 
-
 class UserUID(BaseModel):
     user_uid: str
-
 
 class PaginatedReturn(BaseModel):
     records: List
@@ -60,7 +55,6 @@ class PaginatedReturn(BaseModel):
     total_records: Optional[int]
     skip: Optional[int]
     limit: Optional[int]
-
 
 class UploadQuery(BaseModel):
     uid: Optional[str]
@@ -72,15 +66,12 @@ class UploadQuery(BaseModel):
     screen_height: Optional[str]
     activity_id: Optional[str]
 
-
 class UserAPIKey(BaseModel):
     key: str
-
 
 class StudyAPIKey(BaseModel):
     key: str
     study_uid: str
-
 
 class Upload(ObjectIdentifiers):
     # identify the data
@@ -135,7 +126,6 @@ class Upload(ObjectIdentifiers):
 
     pass
 
-
 class M2C2Upload(ObjectIdentifiers):
     # identify the data
     event_type: Optional[str]
@@ -173,27 +163,22 @@ class ActivityType(str, Enum):
     IFRAME = "iframe"
     REDIRECT = "redirect"
 
-
 class UID(BaseModel):
     id_: str = Field(default_factory=gen_uuid_str)
     uid: str = Field(default_factory=gen_uid)
     uuid: str = gen_uuid_str()
 
-
 class BaseHead(UID):
     created_year: int = get_current_year()
     created_ts: Optional[str] = gen_current_ts_pytz()
-
 
 class Descriptors(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
 
-
 class Params(UID):
     key: str
     value: Optional[str] = None
-
 
 class Notification(BaseHead, Descriptors):
     channel: str
@@ -201,14 +186,12 @@ class Notification(BaseHead, Descriptors):
     notify_at: Optional[str] = None
     message: str = "No message"
 
-
 class NotificationLog(BaseHead):
     channel: str
     notify_at: Optional[str] = None
     notification_uid: Optional[str] = None
     user_uid: Optional[str] = None
     sent_at: Optional[str] = None
-
 
 class Study(BaseHead, Descriptors):
     user_uid: str
@@ -218,14 +201,12 @@ class Study(BaseHead, Descriptors):
     font_color: Optional[str] = None
     font_family: Optional[str] = None
 
-
 class Event(BaseHead, Descriptors):
     activity_uid: str
     user_uid: str
     start_ts: Optional[str] = None
     end_ts: Optional[str] = None
     notifications: Optional[List[Notification]] = None
-
 
 class Content(BaseModel):
     html: Optional[str] = None
@@ -234,7 +215,6 @@ class Content(BaseModel):
     json_: Optional[str] = None
     params: Optional[List[Params]] = None
     URL: Optional[URL] = None
-
 
 class Activity(BaseHead, Descriptors):
     user_uid: str
@@ -282,12 +262,10 @@ class User2(BaseHead):
     is_participant: bool = False
     is_admin: bool = False
 
-
 # Base class for the input request schema
 class OTPRequest(BaseModel):
     email: str = None
     phone_number: str = None
-
 
 # Base class for the output response schema
 class OTPResponse(BaseModel):

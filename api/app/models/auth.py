@@ -43,8 +43,8 @@ class User(BaseModel):
     is_superuser: bool = False
     is_researcher: bool = False
     is_participant: bool = False
-    is_developer: bool = False
-    is_admin: bool = False
+    #is_developer: bool = False
+    #is_admin: bool = False
     studies: List[str] = []
 
     class Config:
@@ -53,6 +53,7 @@ class User(BaseModel):
             IndexModel([("email", ASCENDING)], unique=True),
         ]
 
+# share fields from user into survey_user(participant), researcher, and developer
 
 class UserInDB(User):
     hashed_password: str

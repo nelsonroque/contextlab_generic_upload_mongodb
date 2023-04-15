@@ -71,7 +71,6 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     print(tk)
     return tk
 
-
 @router.post("/update-email/{uid}")
 async def update_user_email(
     uid: str, email: str, token: Annotated[str, Depends(oauth2_scheme)]
@@ -137,7 +136,6 @@ async def add_study_to_user(
     else:
         return {"error": "You do not have permission to access this endpoint."}
 
-
 @router.post("/deny/{email}")
 async def remove_study_from_user(
     email: str, study: str, token: Annotated[str, Depends(oauth2_scheme)]
@@ -178,7 +176,6 @@ async def remove_study_from_user(
     else:
         return {"error": "You do not have permission to access this endpoint."}
 
-
 # Endpoint for sending the OTP
 @router.post("/otp/request")
 async def request_otp(otp_request: OTPRequest):
@@ -205,7 +202,6 @@ async def request_otp(otp_request: OTPRequest):
         )
 
     return OTPResponse(success=True, message="OTP sent successfully.")
-
 
 # Endpoint for verifying the OTP and generating a JWT
 @router.post("/otp/verify")
