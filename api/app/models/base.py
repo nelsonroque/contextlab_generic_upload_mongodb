@@ -42,6 +42,7 @@ class TokenData(BaseModel):
 class ObjectIdentifiers(BaseModel):
     uuid: str = Field(default_factory=gen_uuid_str)
     created_utc: datetime = Field(default_factory=datetime.now)
+    created_tz_est: datetime = Field(default_factory=get_tz_est)
     uid: Optional[str] = Field(default_factory=gen_uid)
 
 

@@ -29,7 +29,7 @@ async def get_database_collections(
         return {"error": "You do not have permission to access this endpoint."}
 
 
-@router.get("/user-list", response_model=List[UserInDB])
+@router.get("/user-list", response_model=List[User])
 async def get_user_list(token: Annotated[str, Depends(oauth2_scheme)]):
     user = decode_token(token)
     print(user)
@@ -46,7 +46,7 @@ async def get_user_list(token: Annotated[str, Depends(oauth2_scheme)]):
         return {"error": "You do not have permission to access this endpoint."}
 
 
-@router.get("/user-list/{study}", response_model=List[UserInDB])
+@router.get("/user-list/{study}", response_model=List[User])
 async def get_user_list_by_study(
     study: str, token: Annotated[str, Depends(oauth2_scheme)]
 ):

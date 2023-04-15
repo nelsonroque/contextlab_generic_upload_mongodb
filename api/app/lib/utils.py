@@ -34,6 +34,9 @@ def gen_otp(len_1=3,len_2=3,delim="-"):
   word2 = "".join(random.sample(num,len_2))
   return f"{word1}{delim}{word2}".upper()
 
+def get_tz_est(tz=Settings.SYSTEM_TIMEZONE):
+    return datetime.now(pytz.timezone(tz))
+
 def get_current_year() -> int:
     return date.today().year
 
